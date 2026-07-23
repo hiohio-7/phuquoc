@@ -216,6 +216,24 @@ textarea.f-input{resize:vertical; min-height:64px}
 .fx-row{display:flex; justify-content:space-between; padding:7px 2px; border-bottom:1px dashed var(--line); font-size:.92rem; font-weight:700}
 .fx-row:last-child{border-bottom:none}
 .fx-row .v{color:var(--coral-dark); font-weight:800}
+/* ---------- 홈 하루 일정 ---------- */
+.hrow{display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px dashed var(--line); cursor:pointer}
+.hrow:last-child{border-bottom:none}
+.hrow .ht{flex:0 0 46px; font-weight:800; font-size:.88rem; color:var(--coral-dark); text-align:right}
+.hrow .he{font-size:1.3rem; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+.hrow .h1{font-weight:800; font-size:.98rem}
+.hrow .h2{font-size:.75rem; color:var(--ink-soft)}
+.dnav{width:34px; height:34px; border-radius:10px; font-size:1rem; font-weight:800; color:var(--coral-dark); background:#FFF0E9; flex-shrink:0}
+.dnav:disabled{opacity:.3}
+/* ---------- 지출 기록 ---------- */
+.exp-row{display:flex; align-items:center; gap:9px; padding:8px 2px; border-bottom:1px dashed var(--line); font-size:.88rem}
+.exp-row:last-child{border-bottom:none}
+.exp-row .when{flex-shrink:0; font-size:.66rem; font-weight:800; background:var(--cream2); color:var(--ink-soft); border-radius:999px; padding:3px 8px}
+.exp-row .et{font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.exp-row .ev{margin-left:auto; flex-shrink:0; font-weight:800; color:var(--teal-dark)}
+.exp-row .del{color:var(--ink-soft); width:28px; height:28px; flex-shrink:0; border-radius:8px}
+.spent-sum{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px}
+.spent-sum .stat .num.sp{color:var(--teal-dark)}
 
 /* ---------- 준비물 ---------- */
 .prog{height:10px; background:var(--cream2); border-radius:999px; overflow:hidden; margin:8px 0 2px}
@@ -393,11 +411,22 @@ const PLACE_COORDS = {
   "Bun Cha Hanoi":{lat:10.2139,lng:103.9620},
 };
 const KKOU_TIPS = [
-  "푸꾸옥 선셋은 <b>선셋타운 키스교</b>가 최고예요! 저녁 일정 비워두는 거 어때요?",
-  "혼똔 케이블카는 <b>오전</b>이 한산해요. 세계에서 가장 긴 해상 케이블카랍니다!",
-  "야시장 갈 땐 <b>현금(동)</b> 챙기세요. 흥정도 잊지 마세요 😉",
   "일정 사이사이 <b>쉬는 시간</b>도 넣어야 가족 모두 행복한 여행이 돼요!",
-  "그랜드월드 야간 분수쇼는 <b>저녁 9시</b>쯤이에요. 미리 자리 잡아요!",
+  "“세상은 한 권의 책이다. 여행하지 않는 자는 그 책의 한 페이지만 읽을 뿐.” — 아우구스티누스",
+  "푸꾸옥 선셋은 <b>선셋타운 키스교</b>가 최고예요! 저녁 일정은 비워두세요 🌅",
+  "혼똔 케이블카는 <b>오전</b>이 한산해요. 세계에서 가장 긴 해상 케이블카랍니다 🚡",
+  "야시장에선 <b>현금(동)</b>이 편해요. 가격 흥정도 잊지 마세요 😉",
+  "베트남 전압은 <b>220V</b> — 한국 플러그 대부분 그대로 쓸 수 있어요 🔌",
+  "현지 이동은 <b>그랩(Grab) 앱</b>이 편하고 바가지 걱정이 없어요 🚕",
+  "생수는 <b>뚜껑 밀봉</b>을 확인하고, 길거리 얼음은 조심하세요 💧",
+  "“여행은 사는 곳을 바꿔주는 게 아니라 우리의 생각과 편견을 바꿔준다.” — 아나톨 프랑스",
+  "환전은 공항보다 <b>시내 환전소</b> 환율이 좋아요. 달러로 가져가 현지 환전 추천 💵",
+  "그랜드월드 야간 분수쇼는 <b>저녁 9시쯤</b> — 미리 자리를 잡아요 ⛲",
+  "여권은 호텔 금고에 두고 <b>사본·사진</b>을 따로 보관하면 든든해요 🛂",
+  "가장 좋은 여행은 <b>함께한 사람</b>으로 기억된대요 — 가족과의 시간을 만끽하세요 🥥",
+  "선크림은 <b>2시간마다</b> 덧바르기! 동남아 자외선은 생각보다 강해요 ☀️",
+  "향신료가 안 맞을 수 있으니 <b>지사제·소화제</b>는 손가방에 챙겨요 💊",
+  "기념품은 <b>후추·캐슈넛·코코넛 캔디</b>가 인기 — 마지막 날 야시장이 찬스 🛍️",
 ];
 
 /* ---------- 데모 데이터 ---------- */
@@ -459,7 +488,11 @@ function demoData(){
     {id:"p8", text:"카메라 + 충전기", owner:"m1", done:false, createdBy:"m1"},
     {id:"p9", text:"물놀이 튜브", owner:"m4", done:false, createdBy:"m4"},
   ];
-  return { trip, items, pack, diary:{}, feed:[
+  const expenses = [
+    {id:"e1", title:"왕복 항공권 (4인)", amt:1600000, cur:"₩", category:"이동", when:"여행 전", ts:Date.now()-86400e3*3, by:"m1"},
+    {id:"e2", title:"호텔 예약금", amt:450000, cur:"₩", category:"숙소", when:"여행 전", ts:Date.now()-86400e3*2, by:"m2"},
+  ];
+  return { trip, items, pack, expenses, diary:{}, feed:[
     {who:"m3", txt:"'선셋타운 키스교 불쇼' 일정을 추가했어요", ts:Date.now()-3600e3},
     {who:"m2", txt:"'가족 스파 타임' 일정을 추가했어요", ts:Date.now()-7200e3},
     {who:"m1", txt:"'푸꾸옥 진주농장'을 후보로 올렸어요", ts:Date.now()-10800e3},
@@ -488,6 +521,7 @@ function load(){
         });
         if(!d.pack) d.pack = [];
         if(!d.diary) d.diary = {};
+        if(!d.expenses) d.expenses = [];
         return d;
       }
     }
@@ -605,42 +639,94 @@ function renderHeader(){
 }
 
 /* ---------- 홈 ---------- */
+let homeDay = null;
+function homeDefaultDay(){
+  const s = new Date(S.trip.startDate+"T00:00:00");
+  const today = new Date(); today.setHours(0,0,0,0);
+  if(today < s) return 0;
+  return Math.min(Math.max(Math.round((today-s)/86400e3),0), dayCount()-1);
+}
+function homeShift(d){
+  const cur = homeDay==null ? homeDefaultDay() : homeDay;
+  homeDay = Math.min(Math.max(cur+d,0), dayCount()-1);
+  renderHome();
+}
+function spentKrw(){
+  return S.expenses.reduce((a,x)=>a+(x.cur==="₩" ? +x.amt : (+x.amt)*EX_RATE), 0);
+}
 function renderHome(){
-  const total = S.items.length;
-  const cand = S.items.filter(i=>i.status==="후보").length;
-  const costK = Math.round(S.items.reduce((a,i)=>a+(+i.cost||0),0)*EX_RATE);
   const s = new Date(S.trip.startDate+"T00:00:00");
   const e = new Date(S.trip.endDate+"T00:00:00");
   const today = new Date(); today.setHours(0,0,0,0);
   const over = today > e;
   const tip = over ? "여행 다녀오느라 고생했어요! 아래 <b>추억 앨범</b>에 한 줄씩 남겨봐요 ✍️"
-    : KKOU_TIPS[new Date().getDate() % KKOU_TIPS.length];
-  const curIdx = Math.min(Math.max(Math.round((today-s)/86400e3),0), dayCount()-1);
-  const preview = dayItems(today<s?0:curIdx).slice(0,3);
+    : KKOU_TIPS[(window._tipIdx==null ? (window._tipIdx=new Date().getDate()%KKOU_TIPS.length) : window._tipIdx)];
 
-  /* 경비 차트 (카테고리별) */
+  /* ---- 하루 일정 카드 ---- */
+  const showIdx = Math.min(homeDay==null ? homeDefaultDay() : homeDay, dayCount()-1);
+  const isToday = (today>=s && today<=e && showIdx===homeDefaultDay());
+  const dayLabel = isToday ? "오늘 일정" : `DAY ${showIdx+1} 일정`;
+  const items = dayItems(showIdx);
+  const schedCard = over ? "" : `
+    <div class="card">
+      <div class="sec-title">📅 ${dayLabel}
+        <span style="font-weight:600;color:var(--ink-soft);font-size:.75rem;margin-left:6px">${fmtDate(dayDate(showIdx),{month:"numeric",day:"numeric",weekday:"short"})}</span>
+        <span style="margin-left:auto;display:flex;gap:6px">
+          <button class="dnav" onclick="homeShift(-1)" ${showIdx===0?"disabled":""}>‹</button>
+          <button class="dnav" onclick="homeShift(1)" ${showIdx===dayCount()-1?"disabled":""}>›</button>
+        </span>
+      </div>
+      ${items.length ? items.map(i=>{
+        const c = CATS[i.category]||CATS["기타"];
+        return `<div class="hrow" onclick="goPlan(${showIdx})">
+          <span class="ht">${i.startTime||"—"}</span>
+          <span class="he" style="background:${c.bg}">${c.e}</span>
+          <div style="min-width:0"><div class="h1">${esc(i.title)}</div>
+          ${i.place?`<div class="h2">📍 ${esc(i.place.name)}</div>`:""}</div>
+        </div>`;
+      }).join("") : `<div class="empty">이 날은 아직 일정이 없어요 — 일정 탭에서 추가해보세요!</div>`}
+      <div class="map-note" style="margin-top:8px;cursor:pointer" onclick="goPlan(${showIdx})">일정 탭에서 수정·투표하기 ›</div>
+    </div>`;
+
+  /* ---- 경비 카드 (예상 + 실제 지출) ---- */
   const catTotals = Object.keys(CATS)
     .map(k=>({k, v:S.items.reduce((a,i)=>a+(i.category===k?(+i.cost||0):0),0)}))
     .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   const totalV = catTotals.reduce((a,x)=>a+x.v,0);
-  const costCard = `
+  const expK = Math.round(totalV*EX_RATE);
+  const spent = spentKrw();
+  const pct = expK ? Math.min(999, Math.round(spent/expK*100)) : 0;
+  const recent = [...S.expenses].sort((a,b)=>b.ts-a.ts).slice(0,5);
+  const expCard = `
     <div class="card">
-      <div class="sec-title">💰 예상 경비 <small>${totalV?fmtVnd(totalV)+" · "+fmtKrw(totalV):"아직 없음"}</small></div>
-      ${catTotals.map(x=>`
+      <div class="sec-title">💰 우리 여행 경비</div>
+      <div class="spent-sum">
+        <div class="stat"><div class="num">${expK?(expK/10000).toFixed(0)+"만원":"—"}</div><div class="lbl">예상 경비 (일정 합계)</div></div>
+        <div class="stat"><div class="num sp">${(spent/10000).toFixed(1)}만원</div><div class="lbl">현재까지 씀 · ${S.expenses.length}건</div></div>
+      </div>
+      ${expK&&pct<=100?`<div class="prog"><div style="width:${pct}%;background:linear-gradient(90deg,var(--teal),var(--teal-dark))"></div></div>
+      <div class="map-note">일정에 적어둔 예상 경비의 ${pct}%를 썼어요</div>`
+      :`<div class="map-note">항공권·예약금 등 일정 외 지출까지 모두 합친 금액이에요</div>`}
+      ${catTotals.length?`<div style="margin-top:10px">${catTotals.map(x=>`
         <div class="costbar">
           <span class="lbl2">${CATS[x.k].e} ${x.k}</span>
           <div class="track"><div class="fill" style="width:${Math.round(x.v/catTotals[0].v*100)}%"></div></div>
           <span class="val">${(x.v*EX_RATE/10000).toFixed(1)}만원</span>
-        </div>`).join("")}
-      <div class="conv">
-        <input class="f-input" id="cvV" inputmode="numeric" placeholder="동 (VND)">
-        <span>₫ ≈</span>
-        <input class="f-input" id="cvK" readonly placeholder="원 (KRW)">
-      </div>
-      <div class="map-note">간이 환율 1만₫ ≈ ${(10000*EX_RATE).toFixed(0)}원 — 여행 전 최신 환율을 확인하세요</div>
+        </div>`).join("")}</div>`:""}
+      ${recent.length?`<div style="margin-top:10px">${recent.map(x=>{
+        const m = member(x.by);
+        const krw = x.cur==="₩" ? +x.amt : Math.round(x.amt*EX_RATE);
+        return `<div class="exp-row">
+          <span class="when">${esc(x.when||"")}</span>
+          <span class="et">${m?m.emoji+" ":""}${esc(x.title)}</span>
+          <span class="ev">${krw.toLocaleString("ko-KR")}원${x.cur==="₫"?`<small style="color:var(--ink-soft);font-weight:600"> (${fmtVnd(x.amt)})</small>`:""}</span>
+          <button class="del" onclick="delExpense('${x.id}')">✕</button>
+        </div>`;
+      }).join("")}</div>`:""}
+      <button class="btn-primary" style="margin-top:12px" onclick="openExpense()">➕ 지출 기록하기</button>
     </div>`;
 
-  /* 추억 앨범 (여행 종료 후) */
+  /* ---- 추억 앨범 (여행 종료 후) ---- */
   const memCard = !over ? "" : `
     <div class="card">
       <div class="sec-title">📸 우리 가족 추억 앨범</div>
@@ -656,29 +742,20 @@ function renderHome(){
     </div>`;
 
   $("#view-home").innerHTML = `
-    <div class="kkou"><div class="face">🥥</div><div class="bubble">${tip}</div></div>
+    <div class="kkou"><div class="face">🥥</div><div class="bubble" id="kkouTip" style="transition:opacity .3s">${tip}</div></div>
     ${memCard}
-    <div class="stats">
-      <div class="stat"><div class="num">${total}</div><div class="lbl">전체 일정</div></div>
-      <div class="stat"><div class="num">${cand}</div><div class="lbl">투표 중 🗳️</div></div>
-      <div class="stat"><div class="num">${costK ? (costK/10000).toFixed(0)+"만원" : "0"}</div><div class="lbl">예상 경비</div></div>
-    </div>
+    ${schedCard}
+    ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
+    ${expCard}
     <div class="card">
       <div class="sec-title">💱 오늘 환율 <small>실시간</small></div>
       <div id="fxBox"><div class="empty">불러오는 중…</div></div>
-    </div>
-    <div class="card">
-      <div class="sec-title">👨‍👩‍👧 함께 가는 가족</div>
-      <div class="member-chips">
-        ${S.trip.members.map(m=>`<span class="mchip ${m.id===meId?"me":""}" style="background:${m.color}">${m.emoji} ${esc(m.nickname)}</span>`).join("")}
+      <div class="conv">
+        <input class="f-input" id="cvV" inputmode="numeric" placeholder="동 (VND)">
+        <span>₫ ≈</span>
+        <input class="f-input" id="cvK" readonly placeholder="원 (KRW)">
       </div>
     </div>
-    ${over?"":`<div class="card">
-      <div class="sec-title">${today<s ? "🌅 첫날 미리보기" : "📌 오늘 일정"}<small onclick="goPlan(${today<s?0:curIdx})" style="cursor:pointer">전체 보기 ›</small></div>
-      ${preview.length ? preview.map(miniCard).join("") : `<div class="empty">아직 일정이 없어요. ＋ 버튼으로 추가해보세요!</div>`}
-    </div>`}
-    ${costCard}
-    ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
     <div class="card">
       <div class="sec-title">🍜 내 주변 맛집</div>
       <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, 현재 위치에서 가까운 음식점을 찾아 <b>구글지도</b>로 연결해드려요.</div></div>
@@ -696,13 +773,105 @@ function renderHome(){
     </div>`;
 
   const cv=$("#cvV");
-  if(cv) cv.oninput=e=>{ const v=+e.target.value||0; $("#cvK").value = v?Math.round(v*EX_RATE).toLocaleString("ko-KR")+"원":""; };
+  if(cv) cv.oninput=ev=>{ const v=+ev.target.value||0; $("#cvK").value = v?Math.round(v*EX_RATE).toLocaleString("ko-KR")+"원":""; };
   document.querySelectorAll(".diary-input").forEach(t=>t.onchange=ev=>{
     S.diary[ev.target.dataset.day]=ev.target.value;
     syncDiary(); toast("추억을 저장했어요 ✨");
   });
+  clearInterval(window._tipTimer);
+  if(!over){
+    window._tipTimer=setInterval(()=>{
+      const el=$("#kkouTip");
+      if(!el){ clearInterval(window._tipTimer); return; }
+      window._tipIdx=(window._tipIdx+1)%KKOU_TIPS.length;
+      el.style.opacity=0;
+      setTimeout(()=>{ el.innerHTML=KKOU_TIPS[window._tipIdx]; el.style.opacity=1; },300);
+    }, 10000);
+  }
   if(!over) loadWeather();
   loadFx();
+}
+
+/* ---------- 지출 기록 ---------- */
+function expWhenLabel(){
+  const s=new Date(S.trip.startDate+"T00:00:00"), e=new Date(S.trip.endDate+"T00:00:00");
+  const today=new Date(); today.setHours(0,0,0,0);
+  if(today<s) return "여행 전";
+  if(today>e) return "여행 후";
+  return "DAY "+(Math.round((today-s)/86400e3)+1);
+}
+function openExpense(){
+  window._expCur="₫"; window._expCat="기타";
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>💸 지출 기록<button class="x" onclick="closeModal()">✕</button></h2>
+      <label class="f-label">무엇에 썼나요? *</label>
+      <input class="f-input" id="exTitle" placeholder="예: 야시장 저녁, 항공권" maxlength="30">
+      <label class="f-label">금액</label>
+      <div class="searchrow">
+        <input class="f-input" type="number" id="exAmt" inputmode="numeric" placeholder="예: 500000">
+        <div class="seg" id="exCur" style="flex:0 0 130px">
+          <button data-c="₫" class="sel">₫ 동</button>
+          <button data-c="₩">₩ 원</button>
+        </div>
+      </div>
+      <div class="krw-hint" id="exHint"></div>
+      <label class="f-label">카테고리</label>
+      <div class="cat-grid" id="exCats">
+        ${Object.entries(CATS).map(([k,v])=>`<button class="cat-opt ${k==="기타"?"sel":""}" data-c="${k}"><span class="e">${v.e}</span><span class="n">${k}</span></button>`).join("")}
+      </div>
+      <div class="imp-hint">🗓 시기는 자동으로 <b>${expWhenLabel()}</b>(으)로 기록돼요. 여행 전에 쓴 항공권·예약금도 지금 입력하면 돼요!</div>
+      <button class="btn-primary" onclick="saveExpense()">기록하기 💸</button>
+    </div>
+  </div>`;
+  $("#exCur").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    window._expCur=b.dataset.c;
+    $("#exCur").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));
+    updateExHint();
+  });
+  $("#exCats").querySelectorAll(".cat-opt").forEach(b=>b.onclick=()=>{
+    window._expCat=b.dataset.c;
+    $("#exCats").querySelectorAll(".cat-opt").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  $("#exAmt").oninput=updateExHint;
+  setTimeout(()=>$("#exTitle").focus(),250);
+}
+function updateExHint(){
+  const v=+$("#exAmt").value||0;
+  $("#exHint").textContent = (v&&window._expCur==="₫") ? "≈ "+Math.round(v*EX_RATE).toLocaleString("ko-KR")+"원" : "";
+}
+function saveExpense(){
+  const amt=+$("#exAmt").value;
+  const title=$("#exTitle").value.trim();
+  if(!title){ $("#exTitle").style.borderColor="var(--danger)"; $("#exTitle").focus(); return; }
+  if(!(amt>0)){ $("#exAmt").style.borderColor="var(--danger)"; $("#exAmt").focus(); return; }
+  const x={id:"x"+Date.now(), title, amt, cur:window._expCur, category:window._expCat||"기타",
+    when:expWhenLabel(), ts:Date.now(), by:meId};
+  S.expenses.push(x);
+  addFeed(`지출 '${title}'을(를) 기록했어요 💸`);
+  syncExpense(x); closeModal(); renderHome();
+  toast("지출을 기록했어요 💸");
+}
+let expUndo=null;
+function delExpense(id){
+  const i=S.expenses.findIndex(x=>x.id===id); if(i<0) return;
+  expUndo=S.expenses[i];
+  S.expenses.splice(i,1);
+  syncDeleteExpense(id); renderHome();
+  toast("지출 기록을 삭제했어요", ()=>{
+    if(!expUndo) return;
+    const x=expUndo; expUndo=null;
+    S.expenses.push(x); syncExpense(x); renderHome(); toast("되돌렸어요! 😊");
+  });
+}
+function syncExpense(x){
+  save();
+  if(FB.on) roomRef().collection("expenses").doc(x.id).set(JSON.parse(JSON.stringify(x))).catch(fbErr);
+}
+function syncDeleteExpense(id){
+  save();
+  if(FB.on) roomRef().collection("expenses").doc(id).delete().catch(fbErr);
 }
 
 /* ---------- 여행 정보 수정 ---------- */
@@ -769,7 +938,7 @@ function openHelp(){
       ④ 이후 누가 고쳐도 모두의 화면에 실시간 반영! (코드·설정값은 가족끼리만 공유)<br><br>
       <b>🎒 그 외</b><br>
       · 준비물 탭: 공용/개인별 체크리스트<br>
-      · 홈: 오늘 환율(자동 갱신), 여행 날씨(출발 2주 전부터 실제 예보), 📍 주변 맛집 찾기<br>
+      · 홈: 하루 일정 한눈에(‹ ›로 날짜 이동), 💸 지출 기록(여행 전 지출도 OK), 날씨·환율·📍 주변 맛집<br>
       · 여행이 끝나면 홈이 자동으로 <b>추억 앨범</b>으로 바뀌어요<br><br>
       <b>🔧 문제 해결</b><br>
       · 지도가 안 보여요 → 인터넷 연결 확인 (오프라인엔 약식 지도로 자동 전환)<br>
@@ -900,7 +1069,7 @@ function tItem(i, idx, len){
   const updater = i.updatedBy && i.updatedBy!==i.createdBy ? member(i.updatedBy) : null;
   const stClass = i.status==="후보"?"cand":(i.status==="완료"?"done":"");
   const stBadge = i.status==="후보" ? `<span class="badge cand">🗳️ 후보</span>`
-    : i.status==="완료" ? `<span class="badge done">✔ 완료</span>` : `<span class="badge confirm">확정</span>`;
+    : i.status==="완료" ? `<span class="badge done">✔ 완료</span>` : "";
   const myR = i.reactions?.[meId];
   const rCount = e => Object.values(i.reactions||{}).filter(x=>x===e).length;
   return `
@@ -1168,6 +1337,7 @@ async function fbConnect(code, create){
       const batch=FB.db.batch();
       S.items.forEach(it=>batch.set(ref.collection("items").doc(it.id), JSON.parse(JSON.stringify(it))));
       S.pack.forEach(p=>batch.set(ref.collection("pack").doc(p.id), JSON.parse(JSON.stringify(p))));
+      S.expenses.forEach(x=>batch.set(ref.collection("expenses").doc(x.id), JSON.parse(JSON.stringify(x))));
       batch.set(ref.collection("meta").doc("diary"), JSON.parse(JSON.stringify(S.diary||{})));
       await batch.commit();
     }else{
@@ -1208,6 +1378,9 @@ function attachFb(ref){
   }, fbErr));
   FB.unsub.push(ref.collection("pack").onSnapshot(q=>{
     S.pack=q.docs.map(d=>d.data()); save(); safeRenderAll();
+  }, fbErr));
+  FB.unsub.push(ref.collection("expenses").onSnapshot(q=>{
+    S.expenses=q.docs.map(d=>d.data()); save(); safeRenderAll();
   }, fbErr));
   FB.unsub.push(ref.collection("meta").doc("diary").onSnapshot(d=>{
     if(d.exists){ S.diary=d.data()||{}; save(); safeRenderAll(); }
