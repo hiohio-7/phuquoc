@@ -294,6 +294,13 @@ textarea.f-input{resize:vertical; min-height:64px}
 @keyframes spinr{to{transform:rotate(360deg)}}
 .rules-box{background:#2E2A25; color:#EDE6DA; border-radius:12px; padding:12px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.68rem; line-height:1.55; white-space:pre; overflow-x:auto; margin-top:8px}
 
+.titem{user-select:none; -webkit-user-select:none}
+.titem input, .titem textarea{user-select:auto; -webkit-user-select:auto}
+.titem.past .tcard{opacity:.5}
+.titem.past .dot{border-color:#C9C0B4}
+.titem.now .tcard{border:2.5px solid var(--coral); box-shadow:0 4px 16px rgba(240,91,58,.22)}
+.titem.lift{z-index:30; position:relative}
+.titem.lift .tcard{box-shadow:0 12px 28px rgba(90,60,30,.3); transform:scale(1.02); border:2px dashed var(--coral)}
 .fold{margin-left:auto; font-size:.74rem; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; gap:4px; padding:4px 0 0}
 .fold .cnts{font-weight:700}
 .cmt{display:flex; gap:7px; padding:6px 0; font-size:.84rem; align-items:baseline; border-bottom:1px dashed var(--line)}
@@ -535,11 +542,22 @@ function load(){
         if(!d.pack) d.pack = [];
         if(!d.diary) d.diary = {};
         if(!d.expenses) d.expenses = [];
-        return d;
+        return migrate(d);
       }
     }
   }catch(e){}
-  return demoData();
+  return migrate(demoData());
+}
+function migrate(d){
+  (d.items||[]).forEach(it=>{
+    if(it.status==="후보"||it.status==="확정") it.status="예정";
+    if(it.memo){
+      it.comments = it.comments||[];
+      it.comments.unshift({id:"m"+it.id, by:it.createdBy||"m1", text:it.memo, ts:it.updatedAt||Date.now()});
+      it.memo = "";
+    }
+  });
+  return d;
 }
 function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }
 
@@ -568,7 +586,7 @@ function dayItems(i){
 function addFeed(txt){
   const e = {who:meId, txt, ts:Date.now()};
   S.feed.unshift(e);
-  S.feed = S.feed.slice(0,10);
+  S.feed = S.feed.slice(0,15);
   if(FB.on) roomRef().collection("feed").add(e).catch(()=>{});
 }
 function toast(msg, undoFn){
@@ -634,6 +652,7 @@ document.querySelectorAll(".tab").forEach(b=>{
       $("#view-"+v).classList.toggle("hidden", v!==curView);
     });
     $("#fab").classList.toggle("hidden", !(curView==="home"||curView==="plan"));
+    if(curView==="plan") window._scrollPlan=true;
     renderAll();
     window.scrollTo({top:0});
   };
@@ -653,6 +672,8 @@ function renderHeader(){
 
 /* ---------- 홈 ---------- */
 let homeDay = null;
+let feedPage = 0;
+function setFeedPage(p){ feedPage=p; renderHome(); }
 function homeDefaultDay(){
   const s = new Date(S.trip.startDate+"T00:00:00");
   const today = new Date(); today.setHours(0,0,0,0);
@@ -672,6 +693,9 @@ function renderHome(){
   const e = new Date(S.trip.endDate+"T00:00:00");
   const today = new Date(); today.setHours(0,0,0,0);
   const over = today > e;
+  const feedPages = Math.max(1, Math.ceil(S.feed.length/5));
+  if(feedPage >= feedPages) feedPage = feedPages-1;
+  const feedPageItems = S.feed.slice(feedPage*5, feedPage*5+5);
   const tip = over ? "여행 다녀오느라 고생했어요! 아래 <b>추억 앨범</b>에 한 줄씩 남겨봐요 ✍️"
     : KKOU_TIPS[(window._tipIdx==null ? (window._tipIdx=new Date().getDate()%KKOU_TIPS.length) : window._tipIdx)];
 
@@ -732,13 +756,27 @@ function renderHome(){
     <div class="kkou"><div class="face">🥥</div><div class="bubble" id="kkouTip" style="transition:opacity .3s">${tip}</div></div>
     ${memCard}
     <div class="card">
-      <div class="sec-title">🔔 최근 소식</div>
-      ${S.feed.length ? S.feed.map(f=>{
+      <div class="sec-title">🔔 최근 소식 <small>${S.feed.length}건</small></div>
+      ${feedPageItems.length ? feedPageItems.map(f=>{
         const m = member(f.who)||{emoji:"👤",nickname:"멤버"};
         return `<div class="feed-item"><span class="who">${m.emoji}</span><span class="txt"><b>${esc(m.nickname)}</b>님이 ${esc(f.txt)}</span><span class="time">${relTime(f.ts)}</span></div>`;
       }).join("") : `<div class="empty">아직 소식이 없어요</div>`}
+      ${feedPages>1?`<div style="display:flex;gap:6px;justify-content:center;margin-top:10px">
+        ${Array.from({length:feedPages},(_,p)=>`<button class="mchip2 ${p===feedPage?"active":""}" style="padding:5px 13px" onclick="setFeedPage(${p})">${p+1}</button>`).join("")}
+      </div>`:""}
     </div>
     ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
+    <div class="card">
+      <div class="sec-title">🍜 내 주변 맛집</div>
+      <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, <b>주변 3km</b>의 음식점을 찾아 <b>구글지도</b>(평점·리뷰)로 연결해드려요.</div></div>
+      <button class="btn-primary" style="margin-top:10px" onclick="findNearby()">📍 현재 위치로 주변 음식점 찾기</button>
+    </div>
+    <div class="card">
+      <div class="sec-title">🏝️ 푸꾸옥 여행 정보</div>
+      <div class="imp-hint" style="margin-top:0">명소·해변·유적지·맛집 추천 모음 — 마음에 들면 그 자리에서 바로 일정에 추가할 수 있어요!</div>
+      <button class="btn-primary" style="margin-top:10px;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openGuide()">🏝️ 추천 여행 정보 보기</button>
+    </div>
+    ${expCard}
     <div class="card">
       <div class="sec-title">💱 오늘 환율 <small>실시간</small></div>
       <div id="fxBox"><div class="empty">불러오는 중…</div></div>
@@ -748,12 +786,6 @@ function renderHome(){
         <input class="f-input" id="cvK" readonly placeholder="원 (KRW)">
       </div>
     </div>
-    <div class="card">
-      <div class="sec-title">🍜 내 주변 맛집</div>
-      <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, 현재 위치에서 가까운 음식점을 찾아 <b>구글지도</b>로 연결해드려요.</div></div>
-      <button class="btn-primary" style="margin-top:10px" onclick="findNearby()">📍 현재 위치로 주변 음식점 찾기</button>
-    </div>
-    ${expCard}
     <div style="text-align:center;margin:4px 0 12px">
       <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="openHelp()">📖 앱 사용법 보기</button>
     </div>`;
@@ -860,6 +892,64 @@ function syncDeleteExpense(id){
   if(FB.on) roomRef().collection("expenses").doc(id).delete().catch(fbErr);
 }
 
+/* ================================================================
+   푸꾸옥 추천 여행 정보
+   ================================================================ */
+const GUIDE = [
+ {c:"명소",e:"🎡",name:"빈원더스 푸꾸옥",d:"동남아 최대급 테마파크+워터파크 — 하루 종일 코스",lat:10.3296,lng:103.8622},
+ {c:"명소",e:"🦒",name:"빈펄 사파리",d:"베트남 최초의 사파리. 기린 먹이주기 체험 인기",lat:10.3541,lng:103.8709},
+ {c:"명소",e:"🚡",name:"혼똔 케이블카",d:"세계 최장(약 8km) 해상 케이블카 — 오전이 한산해요",lat:10.0128,lng:104.0086},
+ {c:"명소",e:"🌇",name:"선셋타운",d:"지중해풍 마을. 키스교 선셋과 밤 불꽃쇼 명소",lat:10.0166,lng:104.0075},
+ {c:"명소",e:"⛲",name:"그랜드월드",d:"'잠들지 않는 도시' — 야간 쇼·곤돌라·대나무 건축",lat:10.3364,lng:103.8580},
+ {c:"명소",e:"💦",name:"아쿠아토피아 워터파크",d:"혼똔섬의 대형 워터파크. 케이블카와 묶어 하루 코스",lat:9.9576,lng:104.0163},
+ {c:"해변",e:"⭐",name:"사오 비치",d:"푸꾸옥 대표 백사장. 그네·불가사리 포토존",lat:10.0553,lng:104.0369},
+ {c:"해변",e:"🌅",name:"옹랑 비치",d:"조용하고 선셋이 아름다운 해변. 감성 카페 밀집",lat:10.1770,lng:103.9640},
+ {c:"해변",e:"🏖️",name:"롱 비치",d:"서해안을 따라 길게 뻗은 해변 — 선셋 산책 코스",lat:10.1600,lng:103.9660},
+ {c:"해변",e:"🐚",name:"켐 비치",d:"밀가루처럼 고운 모래의 남부 해변",lat:10.0230,lng:104.0430},
+ {c:"유적·문화",e:"⛩️",name:"진꺼우 사원",d:"바다 신을 모신 바위 위 사원 — 앱 이름 '꼬우'의 그곳!",lat:10.2167,lng:103.9560},
+ {c:"유적·문화",e:"🏛️",name:"푸꾸옥 감옥 (코코넛 감옥)",d:"전쟁 역사를 담은 유적지. 무료 입장",lat:10.0210,lng:104.0269},
+ {c:"유적·문화",e:"🛕",name:"호국사 (Ho Quoc Pagoda)",d:"바다를 내려다보는 대형 사원 — 일출 명소",lat:10.0430,lng:104.0520},
+ {c:"유적·문화",e:"🗼",name:"즈엉동 등대·어촌마을",d:"섬 중심 마을 산책과 소박한 어촌 풍경",lat:10.2160,lng:103.9570},
+ {c:"맛집",e:"🌙",name:"진꺼우 야시장",d:"해산물 구이·열대과일·코코넛 아이스크림의 성지",lat:10.2158,lng:103.9584},
+ {c:"맛집",e:"🦀",name:"Crab House",d:"장갑 끼고 먹는 크랩 전문점 — 한국인 인기 최상위"},
+ {c:"맛집",e:"🍜",name:"Bun Quay Kien Xay",d:"푸꾸옥 명물 '분꽈이' — 직접 소스 만들어 먹는 국수"},
+ {c:"맛집",e:"☕",name:"Chuon Chuon Bistro",d:"언덕 위 전망 카페. 브런치와 뷰 맛집"},
+ {c:"쇼핑",e:"🛒",name:"킹콩마트",d:"후추·캐슈넛·커피 기념품 원스톱 쇼핑"},
+ {c:"쇼핑",e:"🦪",name:"진주농장 (Ngoc Hien)",d:"푸꾸옥 특산 진주 — 시연 구경만도 재미",lat:10.1310,lng:103.9670},
+];
+let guideCat = "전체";
+function openGuide(){ renderGuide(); }
+function renderGuide(){
+  const cats = ["전체","명소","해변","유적·문화","맛집","쇼핑"];
+  const list = GUIDE.filter(g=>guideCat==="전체"||g.c===guideCat);
+  window._guideList = list;
+  $("#modalRoot").innerHTML = `
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>🏝️ 푸꾸옥 여행 정보<button class="x" onclick="closeModal()">✕</button></h2>
+      <div class="map-chips" style="padding-bottom:8px">
+        ${cats.map(ct=>`<button class="mchip2 ${ct===guideCat?"active":""}" onclick="guideCat='${ct}';renderGuide()">${ct}</button>`).join("")}
+      </div>
+      ${list.map((g,i)=>`
+        <div class="res-item" style="cursor:default">
+          <span class="pin">${g.e}</span>
+          <div style="min-width:0"><div class="nm2">${esc(g.name)}</div><div class="ad">${esc(g.d)}</div></div>
+          <span style="margin-left:auto;display:flex;gap:6px;flex-shrink:0">
+            <a class="btn-mini" style="text-decoration:none;padding:8px 10px" target="_blank" rel="noopener"
+              href="https://www.google.com/maps/search/${encodeURIComponent(g.name+" Phu Quoc")}${g.lat?`/@${g.lat},${g.lng},16z`:""}">지도</a>
+            <button class="btn-mini" style="background:#FFF0E9;color:var(--coral-dark);padding:8px 10px" onclick="pickGuide(${i})">＋일정</button>
+          </span>
+        </div>`).join("")}
+      <div class="map-note" style="margin-top:10px">평점·리뷰·영업시간은 '지도'를 눌러 구글지도에서 확인하세요</div>
+    </div>
+  </div>`;
+}
+function pickGuide(i){
+  const g=(window._guideList||[])[i]; if(!g) return;
+  openForm(null, {title:g.name, place:{name:g.name, ...(g.lat?{lat:g.lat,lng:g.lng}:{})}, dayIndex:(curView==="plan"?curDay:0)});
+  toast("날짜와 시간을 정해주세요 🏝️");
+}
+
 /* ---------- 여행 정보 수정 ---------- */
 function openTripSettings(){
   $("#modalRoot").innerHTML=`
@@ -913,7 +1003,7 @@ function openHelp(){
       <b>📅 일정 관리</b><br>
       · ＋ 버튼: 일정 추가 (장소 이름 쓰고 🔍를 누르면 지도 위치 자동)<br>
       · 📥 가져오기: 구글지도 공유 링크나 "12/24 10시 빈원더스" 같은 메모를 붙여넣으면 일정으로 변환<br>
-      · 카드의 ✏️ 수정 / ▲▼ 순서 변경 / 👍❤️🤔 가족 반응 / 후보 일정은 '확정하기'로 투표 마감<br>
+      · 카드의 ✏️ 수정 / 카드를 <b>꾹 눌러 끌면</b> 순서 변경 / ▾ 자세히에서 비용·반응·댓글<br>
       · 여행 이름·날짜 변경: 상단 주황 헤더의 <b>날짜 부분(✏️)</b>을 누르세요<br><br>
       <b>🗺️ 지도</b><br>
       날짜별 동선과 이동시간이 자동 표시돼요. ▶를 누르면 하루 동선이 시간순으로 재생! 지도에 없는 일정은 장소 이름·좌표를 넣으면 나타나요.<br><br>
@@ -985,7 +1075,7 @@ function findNearby(){
     myLoc={lat:pos.coords.latitude, lng:pos.coords.longitude};
     box.innerHTML=`<div class="imp-msg"><span class="spin">🥥</span> 주변 음식점을 찾는 중…</div>`;
     try{
-      const q=`[out:json][timeout:12];(node["amenity"~"restaurant|fast_food|food_court"]["name"](around:1500,${myLoc.lat},${myLoc.lng}););out 40;`;
+      const q=`[out:json][timeout:12];(node["amenity"~"restaurant|fast_food|food_court"]["name"](around:3000,${myLoc.lat},${myLoc.lng}););out 40;`;
       const r=await fetch("https://overpass-api.de/api/interpreter",{
         method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
         body:"data="+encodeURIComponent(q)});
@@ -994,9 +1084,14 @@ function findNearby(){
         .filter(e=>e.tags&&e.tags.name)
         .map(e=>({name:e.tags.name, cuisine:(e.tags.cuisine||"").split(";")[0].replace(/_/g," "),
           lat:e.lat, lng:e.lon, km:havKm(myLoc,{lat:e.lat,lng:e.lon})}))
-        .sort((a,b)=>a.km-b.km).slice(0,10);
-      if(!list.length){ box.innerHTML=nearFallback("주변 1.5km 안에서 등록된 음식점을 찾지 못했어요"); return; }
-      box.innerHTML=list.map(x=>`
+        .sort((a,b)=>a.km-b.km).slice(0,12);
+      if(!list.length){ box.innerHTML=nearFallback("주변 3km 안에서 등록된 음식점을 찾지 못했어요"); return; }
+      box.innerHTML=`<a class="res-item" style="text-decoration:none;color:inherit;background:var(--teal-light);border-radius:12px;padding:10px" target="_blank" rel="noopener"
+          href="https://www.google.com/maps/search/${encodeURIComponent("맛집")}/@${myLoc.lat},${myLoc.lng},15z">
+          <span class="pin">⭐</span>
+          <div><div class="nm2">구글지도에서 평점·리뷰순으로 보기</div>
+          <div class="ad">구글지도가 주변 맛집을 평점 기준으로 보여줘요</div></div>
+          <span class="go">열기 ›</span></a>` + list.map(x=>`
         <a class="res-item" style="text-decoration:none;color:inherit" target="_blank" rel="noopener"
           href="https://www.google.com/maps/search/${encodeURIComponent(x.name)}/@${x.lat},${x.lng},18z">
           <span class="pin">🍜</span>
@@ -1021,7 +1116,7 @@ function miniCard(i){
   </div>`;
 }
 function goPlan(day){
-  curDay = day;
+  curDay = day; window._scrollPlan=true;
   document.querySelector('.tab[data-v="plan"]').click();
 }
 
@@ -1035,6 +1130,16 @@ function renderPlan(){
       <div class="d">DAY ${i+1}</div><div class="dt">${fmtDate(d,{month:"numeric",day:"numeric",weekday:"short"})}</div></button>`;
   }
   const items = dayItems(curDay);
+  const isToday = dayDate(curDay).toDateString() === new Date().toDateString();
+  const nmin = new Date().getHours()*60 + new Date().getMinutes();
+  let nowId = null;
+  if(isToday){
+    for(const it of items){
+      const endM = toMin(it.endTime)!=null ? toMin(it.endTime) : toMin(it.startTime);
+      if(endM!=null && endM < nmin) continue;
+      nowId = it.id; break;
+    }
+  }
   $("#view-plan").innerHTML = `
     <div class="day-tabs">${tabs}</div>
     <div class="day-head">
@@ -1042,31 +1147,97 @@ function renderPlan(){
       <button class="sort-btn" style="margin-left:auto;background:#FFF0E9;color:var(--coral-dark)" onclick="openImport()">📥 가져오기</button>
       <button class="sort-btn" style="margin-left:0" onclick="sortByTime()">🕐 시간순</button>
     </div>
-    ${items.length ? `<div class="timeline">${items.map((it,idx)=>tItem(it,idx,items.length)).join("")}</div>`
+    ${items.length ? `<div class="timeline">${items.map((it,idx)=>tItem(it,idx,items.length,isToday,nowId,nmin)).join("")}</div>`
       : `<div class="placeholder"><span class="big">🌊</span><h3>DAY ${curDay+1}은 아직 비어있어요</h3><p>＋ 버튼으로 직접 추가하거나<br>구글지도 링크·메모를 붙여넣어 가져와보세요!</p>
         <button class="stage-badge" style="border:none;cursor:pointer" onclick="openImport()">📥 일정 가져오기</button></div>`}
+    ${items.length?`<div class="map-note">카드를 <b>꾹 눌러 위아래로 끌면</b> 순서가 바뀌어요</div>`:""}
     <div style="height:70px"></div>`;
+  bindPlanDrag();
+  if(window._scrollPlan){
+    window._scrollPlan=false;
+    setTimeout(()=>{ const nel=document.querySelector(".titem.now"); if(nel) nel.scrollIntoView({behavior:"smooth", block:"center"}); },120);
+  }
 }
-function setDay(i){ curDay = i; renderPlan(); }
+function setDay(i){ curDay = i; window._scrollPlan=true; renderPlan(); }
+
+/* ---------- 꾹 눌러 순서 변경 (롱프레스 드래그) ---------- */
+function bindPlanDrag(){
+  const tl=document.querySelector("#view-plan .timeline");
+  if(!tl || tl._bound) return; tl._bound=true;
+  tl.oncontextmenu=e=>{ if(window._dragActive) e.preventDefault(); };
+  let timer=null, el=null, active=false, sy=0, sx=0;
+  const blockScroll=e=>{ if(active) e.preventDefault(); };
+  function cleanup(){
+    clearTimeout(timer); timer=null;
+    document.removeEventListener("touchmove", blockScroll);
+    window._dragActive=false;
+    if(el){ el.classList.remove("lift"); el.style.transform=""; }
+  }
+  function finish(){
+    const ids=[...tl.querySelectorAll(".titem")].map(x=>x.dataset.id);
+    const list=dayItems(curDay);
+    const orders=list.map(x=>x.order).sort((a,b)=>a-b);
+    const changed=[];
+    ids.forEach((id,k)=>{ const it=list.find(x=>x.id===id); if(it && it.order!==orders[k]){ it.order=orders[k]; changed.push(it); } });
+    cleanup(); el=null; active=false;
+    if(changed.length){ syncItems(...changed); toast("순서를 바꿨어요 ↕️"); }
+    renderPlan();
+  }
+  tl.addEventListener("pointerdown", e=>{
+    const card=e.target.closest(".titem");
+    if(!card || e.target.closest("button,input,textarea,a")) return;
+    el=card; sy=e.clientY; sx=e.clientX; active=false;
+    timer=setTimeout(()=>{
+      active=true; window._dragActive=true;
+      el.classList.add("lift");
+      if(navigator.vibrate) try{navigator.vibrate(30);}catch(_){ }
+      document.addEventListener("touchmove", blockScroll, {passive:false});
+      try{ el.setPointerCapture(e.pointerId); }catch(_){ }
+    }, 420);
+  });
+  tl.addEventListener("pointermove", e=>{
+    if(!el) return;
+    if(!active){
+      if(Math.abs(e.clientY-sy)>8 || Math.abs(e.clientX-sx)>8){ clearTimeout(timer); el=null; }
+      return;
+    }
+    e.preventDefault();
+    el.style.transform=`translateY(${e.clientY-sy}px)`;
+    for(const s of tl.querySelectorAll(".titem")){
+      if(s===el) continue;
+      const r=s.getBoundingClientRect();
+      if(e.clientY>r.top && e.clientY<r.bottom){
+        if(e.clientY < r.top + r.height/2) tl.insertBefore(el, s);
+        else tl.insertBefore(el, s.nextSibling);
+        sy=e.clientY; el.style.transform="translateY(0)";
+        break;
+      }
+    }
+  });
+  const up=()=>{ if(!el){ clearTimeout(timer); return; } if(active){ finish(); } else { cleanup(); el=null; } };
+  tl.addEventListener("pointerup", up);
+  tl.addEventListener("pointercancel", up);
+}
 
 let expandedIds = new Set();
 function toggleFold(id){
   if(expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
   renderPlan();
 }
-function tItem(i, idx, len){
+function tItem(i, idx, len, isToday, nowId, nmin){
   const c = CATS[i.category]||CATS["기타"];
-  const stClass = i.status==="후보"?"cand":(i.status==="완료"?"done":"");
-  const stBadge = i.status==="후보" ? `<span class="badge cand">🗳️ 후보</span>`
-    : i.status==="완료" ? `<span class="badge done">✔ 완료</span>` : "";
+  const endM = toMin(i.endTime)!=null ? toMin(i.endTime) : toMin(i.startTime);
+  const past = isToday && endM!=null && endM < nmin;
+  const isNow = isToday && i.id===nowId;
+  const stClass = `${i.status==="완료"?"done":""} ${past?"past":""} ${isNow?"now":""}`;
   const myR = i.reactions?.[meId];
   const rCount = e => Object.values(i.reactions||{}).filter(x=>x===e).length;
   const rTotal = Object.values(i.reactions||{}).length;
   const cmts = i.comments||[];
   const open = expandedIds.has(i.id);
-  const cnts = `${i.memo?" 📝":""}${rTotal?" ❤️"+rTotal:""}${cmts.length?" 💬"+cmts.length:""}`;
+  const cnts = `${i.cost?" 💰":""}${rTotal?" ❤️"+rTotal:""}${cmts.length?" 💬"+cmts.length:""}`;
   return `
-  <div class="titem ${stClass}">
+  <div class="titem ${stClass}" data-id="${i.id}">
     <div class="time-col">${i.startTime||"—"}${i.endTime?`<div class="end">~${i.endTime}</div>`:""}</div>
     <div class="dot"></div>
     <div class="tcard">
@@ -1076,22 +1247,18 @@ function tItem(i, idx, len){
           <div class="tt">${esc(i.title)}</div>
           ${i.place?`<div class="place">📍 ${esc(i.place.name)}</div>`:""}
         </div>
-        <div class="card-actions">
-          <button class="icon-btn" onclick="moveItem('${i.id}',-1)" ${idx===0?"disabled style='opacity:.25'":""}>▲</button>
-          <button class="icon-btn" onclick="moveItem('${i.id}',1)" ${idx===len-1?"disabled style='opacity:.25'":""}>▼</button>
-          <button class="icon-btn" onclick="openForm('${i.id}')">✏️</button>
-        </div>
+        <button class="icon-btn" style="flex-shrink:0" onclick="openForm('${i.id}')">✏️</button>
       </div>
       <div class="meta">
-        ${stBadge}
-        ${i.cost?`<span class="cost">${fmtVnd(i.cost)} <small>(${fmtKrw(i.cost)})</small></span>`:""}
-        <button class="fold" onclick="toggleFold('${i.id}')">${open?"▴ 접기":"▾ 메모·댓글"}<span class="cnts">${cnts}</span></button>
+        ${isNow?`<span class="badge" style="background:#FFE7DE;color:var(--coral-dark)">⏰ 다음 일정</span>`:""}
+        ${past&&i.status!=="완료"?`<span class="badge done">🕐 지남</span>`:""}
+        ${i.status==="완료"?`<span class="badge done">✔ 완료</span>`:""}
+        <button class="fold" onclick="toggleFold('${i.id}')">${open?"▴ 접기":"▾ 자세히"}<span class="cnts">${cnts}</span></button>
       </div>
       ${open?`
-      ${i.memo?`<div class="memo">${esc(i.memo)}</div>`:""}
+      ${i.cost?`<div class="cost" style="display:block;margin-top:8px">💰 ${fmtVnd(i.cost)} <small>(${fmtKrw(i.cost)})</small></div>`:""}
       <div class="reactions">
         ${["👍","❤️","🤔"].map(e=>`<button class="rbtn ${myR===e?"on":""}" onclick="react('${i.id}','${e}')">${e}${rCount(e)?" "+rCount(e):""}</button>`).join("")}
-        ${i.status==="후보" ? `<button class="rbtn" style="margin-left:auto;color:var(--teal-dark);border-color:var(--teal)" onclick="confirmItem('${i.id}')">확정하기 ✓</button>`:""}
       </div>
       <div style="margin-top:6px">
         ${cmts.map(cm=>{
@@ -1130,20 +1297,6 @@ function react(id, e){
   if(it.reactions[meId]===e) delete it.reactions[meId]; else it.reactions[meId]=e;
   syncItems(it); renderPlan();
 }
-function confirmItem(id){
-  const it = S.items.find(x=>x.id===id); if(!it) return;
-  it.status="확정"; it.updatedBy=meId; it.updatedAt=Date.now();
-  addFeed(`'${it.title}'을(를) 확정했어요 ✓`);
-  syncItems(it); renderAll(); toast("일정이 확정됐어요! 🎉");
-}
-function moveItem(id, dir){
-  const it = S.items.find(x=>x.id===id); if(!it) return;
-  const list = dayItems(it.dayIndex);
-  const idx = list.findIndex(x=>x.id===id);
-  const other = list[idx+dir]; if(!other) return;
-  [it.order, other.order] = [other.order, it.order];
-  syncItems(it, other); renderPlan();
-}
 function sortByTime(){
   const list = dayItems(curDay);
   const sorted = [...list].sort((a,b)=>(a.startTime||"99:99").localeCompare(b.startTime||"99:99"));
@@ -1158,7 +1311,7 @@ function openForm(id, preset){
   const edit = id ? S.items.find(x=>x.id===id) : null;
   formState = edit ? JSON.parse(JSON.stringify(edit)) : {
     id:null, dayIndex:(curView==="plan"?curDay:0), startTime:"", endTime:"",
-    title:"", category:"관광", place:null, memo:"", cost:0, status:"확정",
+    title:"", category:"관광", place:null, memo:"", cost:0, status:"예정",
   };
   if(preset && !edit) Object.assign(formState, preset);
   const f = formState;
@@ -1188,15 +1341,12 @@ function openForm(id, preset){
       <div id="fPlaceRes"></div>
       <label class="f-label">지도 좌표 <span style="font-weight:600">(선택 · 구글지도에서 장소를 꾹 누르면 나오는 숫자)</span></label>
       <input class="f-input" id="fCoord" placeholder="예: 10.2158, 103.9584" value="${f.place&&f.place.lat!=null?f.place.lat+", "+f.place.lng:""}">
-      <label class="f-label">메모</label>
-      <textarea class="f-input" id="fMemo" placeholder="준비물, 예약번호, 꿀팁 등">${esc(f.memo)}</textarea>
       <label class="f-label">예상 비용 (VND · 동)</label>
       <input class="f-input" type="number" id="fCost" inputmode="numeric" placeholder="예: 500000" value="${f.cost||""}">
       <div class="krw-hint" id="fKrw">${f.cost?("≈ "+fmtKrw(f.cost)):""}</div>
       <label class="f-label">상태</label>
       <div class="seg" id="fStatus">
-        <button data-s="확정" class="${f.status==="확정"?"sel":""}">확정</button>
-        <button data-s="후보" class="${f.status==="후보"?"sel":""}">🗳️ 후보 (가족 투표)</button>
+        <button data-s="예정" class="${f.status!=="완료"?"sel":""}">🌴 예정</button>
         <button data-s="완료" class="${f.status==="완료"?"sel":""}">✔ 완료</button>
       </div>
       <button class="btn-primary" onclick="submitForm()">${edit?"수정 저장하기":"일정 추가하기"} 🥥</button>
@@ -1234,7 +1384,6 @@ function submitForm(){
     else if($("#fCoord").value.trim()===""){ delete f.place.lat; delete f.place.lng; }
     if(f.place.lat==null && PLACE_COORDS[pname]) Object.assign(f.place, PLACE_COORDS[pname]);
   }
-  f.memo = $("#fMemo").value.trim();
   f.cost = +$("#fCost").value || 0;
   if(f.id){
     const i = S.items.findIndex(x=>x.id===f.id);
@@ -1394,7 +1543,7 @@ function attachFb(ref){
     S.items=q.docs.map(d=>d.data()); save(); safeRenderAll();
   }, fbErr));
   window._feedReady=false;
-  FB.unsub.push(ref.collection("feed").orderBy("ts","desc").limit(10).onSnapshot(q=>{
+  FB.unsub.push(ref.collection("feed").orderBy("ts","desc").limit(15).onSnapshot(q=>{
     const prevTop=(S.feed[0]&&S.feed[0].ts)||0;
     S.feed=q.docs.map(d=>d.data());
     if(window._feedReady) maybeNotify(S.feed.filter(f=>f.ts>prevTop));
@@ -1780,7 +1929,7 @@ function addDraftItems(){
       id:"i"+Date.now()+Math.floor(Math.random()*1e4), dayIndex:d.dayIndex,
       startTime:d.startTime, endTime:"", title:d.title, category:d.category,
       place: PLACE_COORDS[d.title]?{name:d.title,...PLACE_COORDS[d.title]}:null,
-      memo:"", cost:0, status:"확정", createdBy:meId, updatedBy:null,
+      memo:"", cost:0, status:"예정", createdBy:meId, updatedBy:null,
       updatedAt:Date.now(), order:++ord, reactions:{},
     };
     S.items.push(it); created.push(it);
@@ -2324,7 +2473,7 @@ function resetDemo(){
       <p>모든 데이터를 지우고<br>데모 데이터로 되돌릴까요?</p>
       <div class="btns">
         <button class="b-gray" onclick="closeModal()">취소</button>
-        <button class="b-red" onclick="S=demoData();save();closeModal();renderAll();toast('데모 데이터로 초기화했어요')">초기화</button>
+        <button class="b-red" onclick="S=migrate(demoData());save();closeModal();renderAll();toast('데모 데이터로 초기화했어요')">초기화</button>
       </div>
     </div>
   </div>`;
