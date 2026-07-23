@@ -294,6 +294,15 @@ textarea.f-input{resize:vertical; min-height:64px}
 @keyframes spinr{to{transform:rotate(360deg)}}
 .rules-box{background:#2E2A25; color:#EDE6DA; border-radius:12px; padding:12px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.68rem; line-height:1.55; white-space:pre; overflow-x:auto; margin-top:8px}
 
+.fold{margin-left:auto; font-size:.74rem; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; gap:4px; padding:4px 0 0}
+.fold .cnts{font-weight:700}
+.cmt{display:flex; gap:7px; padding:6px 0; font-size:.84rem; align-items:baseline; border-bottom:1px dashed var(--line)}
+.cmt:last-of-type{border-bottom:none}
+.cmt .t{min-width:0; word-break:break-all}
+.cmt .time{margin-left:auto; font-size:.66rem; color:var(--ink-soft); flex-shrink:0}
+.cmt .delc{color:var(--ink-soft); font-size:.72rem; flex-shrink:0}
+.cmt-add{display:flex; gap:8px; margin-top:8px}
+.cmt-add input{flex:1; min-width:0; padding:9px 11px; font-size:.88rem}
 /* ---------- 지도 탭 ---------- */
 .map-chips{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px; scrollbar-width:none}
 .map-chips::-webkit-scrollbar{display:none}
@@ -363,7 +372,7 @@ textarea.f-input{resize:vertical; min-height:64px}
   <button class="tab" data-v="plan"><span class="ico">📅</span><span class="lb">일정</span></button>
   <button class="tab" data-v="map"><span class="ico">🗺️</span><span class="lb">지도</span></button>
   <button class="tab" data-v="pack"><span class="ico">✅</span><span class="lb">준비물</span></button>
-  <button class="tab" data-v="family"><span class="ico">👨‍👩‍👧</span><span class="lb">가족</span></button>
+  <button class="tab" data-v="family"><span class="ico">👥</span><span class="lb">멤버</span></button>
 </nav>
 
 <div id="modalRoot"></div>
@@ -487,6 +496,10 @@ function demoData(){
     {id:"p7", text:"방수팩", owner:"m3", done:true, createdBy:"m3"},
     {id:"p8", text:"카메라 + 충전기", owner:"m1", done:false, createdBy:"m1"},
     {id:"p9", text:"물놀이 튜브", owner:"m4", done:false, createdBy:"m4"},
+  ];
+  items[3].comments = [
+    {id:"c1", by:"m4", text:"코코넛 아이스크림 꼭 먹을래!", ts:Date.now()-5400e3},
+    {id:"c2", by:"m2", text:"해산물은 익힌 걸로만~ 🦐", ts:Date.now()-3600e3},
   ];
   const expenses = [
     {id:"e1", title:"왕복 항공권 (4인)", amt:1600000, cur:"₩", category:"이동", when:"여행 전", ts:Date.now()-86400e3*3, by:"m1"},
@@ -631,7 +644,7 @@ function renderHeader(){
   const s = new Date(S.trip.startDate+"T00:00:00"), e = new Date(S.trip.endDate+"T00:00:00");
   $("#appTitle").textContent = S.trip.title || "푸꾸옥 꼬우!";
   $("#tripDates").textContent =
-    `${fmtDate(s,{month:"numeric",day:"numeric"})} ~ ${fmtDate(e,{month:"numeric",day:"numeric"})} · ${dayCount()-1}박 ${dayCount()}일 · 가족 ${S.trip.members.length}명 ✏️`;
+    `${fmtDate(s,{month:"numeric",day:"numeric"})} ~ ${fmtDate(e,{month:"numeric",day:"numeric"})} · ${dayCount()-1}박 ${dayCount()}일 · 멤버 ${S.trip.members.length}명 ✏️`;
   const today = new Date(); today.setHours(0,0,0,0);
   const dd = Math.round((s-today)/86400e3);
   $("#dday").textContent = dd>0 ? `D-${dd} 🥥` : (today<=e ? "여행 중! 🏖️" : "다녀왔어요 ✨");
@@ -661,32 +674,6 @@ function renderHome(){
   const over = today > e;
   const tip = over ? "여행 다녀오느라 고생했어요! 아래 <b>추억 앨범</b>에 한 줄씩 남겨봐요 ✍️"
     : KKOU_TIPS[(window._tipIdx==null ? (window._tipIdx=new Date().getDate()%KKOU_TIPS.length) : window._tipIdx)];
-
-  /* ---- 하루 일정 카드 ---- */
-  const showIdx = Math.min(homeDay==null ? homeDefaultDay() : homeDay, dayCount()-1);
-  const isToday = (today>=s && today<=e && showIdx===homeDefaultDay());
-  const dayLabel = isToday ? "오늘 일정" : `DAY ${showIdx+1} 일정`;
-  const items = dayItems(showIdx);
-  const schedCard = over ? "" : `
-    <div class="card">
-      <div class="sec-title">📅 ${dayLabel}
-        <span style="font-weight:600;color:var(--ink-soft);font-size:.75rem;margin-left:6px">${fmtDate(dayDate(showIdx),{month:"numeric",day:"numeric",weekday:"short"})}</span>
-        <span style="margin-left:auto;display:flex;gap:6px">
-          <button class="dnav" onclick="homeShift(-1)" ${showIdx===0?"disabled":""}>‹</button>
-          <button class="dnav" onclick="homeShift(1)" ${showIdx===dayCount()-1?"disabled":""}>›</button>
-        </span>
-      </div>
-      ${items.length ? items.map(i=>{
-        const c = CATS[i.category]||CATS["기타"];
-        return `<div class="hrow" onclick="goPlan(${showIdx})">
-          <span class="ht">${i.startTime||"—"}</span>
-          <span class="he" style="background:${c.bg}">${c.e}</span>
-          <div style="min-width:0"><div class="h1">${esc(i.title)}</div>
-          ${i.place?`<div class="h2">📍 ${esc(i.place.name)}</div>`:""}</div>
-        </div>`;
-      }).join("") : `<div class="empty">이 날은 아직 일정이 없어요 — 일정 탭에서 추가해보세요!</div>`}
-      <div class="map-note" style="margin-top:8px;cursor:pointer" onclick="goPlan(${showIdx})">일정 탭에서 수정·투표하기 ›</div>
-    </div>`;
 
   /* ---- 경비 카드 (예상 + 실제 지출) ---- */
   const catTotals = Object.keys(CATS)
@@ -744,7 +731,6 @@ function renderHome(){
   $("#view-home").innerHTML = `
     <div class="kkou"><div class="face">🥥</div><div class="bubble" id="kkouTip" style="transition:opacity .3s">${tip}</div></div>
     ${memCard}
-    ${schedCard}
     ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
     ${expCard}
     <div class="card">
@@ -932,9 +918,9 @@ function openHelp(){
       <b>🗺️ 지도</b><br>
       날짜별 동선과 이동시간이 자동 표시돼요. ▶를 누르면 하루 동선이 시간순으로 재생! 지도에 없는 일정은 장소 이름·좌표를 넣으면 나타나요.<br><br>
       <b>👨‍👩‍👧 가족과 실시간 공유</b><br>
-      ① 가족 중 한 명이 [가족 탭 → ⚙️ 5분 설정]으로 Firebase(무료·구글)를 만들고 🔒 보안 규칙까지 게시<br>
+      ① 가족 중 한 명이 [멤버 탭 → ⚙️ 5분 설정]으로 Firebase(무료·구글)를 만들고 🔒 보안 규칙까지 게시<br>
       ② [🏠 새 여행방 만들기] → 6자리 코드 생성<br>
-      ③ 가족들은 같은 파일을 받아 열고 → 가족 탭에서 같은 설정(config)을 붙여넣고 → [🔑 초대 코드로 참여]<br>
+      ③ 가족들은 같은 앱을 열고 → 멤버 탭에서 같은 설정(config)을 붙여넣고 → [🔑 초대 코드로 참여]<br>
       ④ 이후 누가 고쳐도 모두의 화면에 실시간 반영! (코드·설정값은 가족끼리만 공유)<br><br>
       <b>🎒 그 외</b><br>
       · 준비물 탭: 공용/개인별 체크리스트<br>
@@ -943,8 +929,8 @@ function openHelp(){
       <b>🔧 문제 해결</b><br>
       · 지도가 안 보여요 → 인터넷 연결 확인 (오프라인엔 약식 지도로 자동 전환)<br>
       · 위치 찾기가 안 돼요 → 위치 권한 허용, 안 되면 '구글지도에서 바로 찾기' 버튼 이용<br>
-      · 처음부터 다시 → 가족 탭 맨 아래 '데모 데이터로 초기화'<br>
-      · 실시간 공유가 끊겼어요 → 가족 탭에서 연결 상태 확인, 다시 [코드로 참여]
+      · 처음부터 다시 → 멤버 탭 맨 아래 '데모 데이터로 초기화'<br>
+      · 실시간 공유가 끊겼어요 → 멤버 탭에서 연결 상태 확인, 다시 [코드로 참여]
       </div>
       <button class="btn-primary" onclick="closeModal()">알겠어요! 🥥</button>
     </div>
@@ -1063,15 +1049,22 @@ function renderPlan(){
 }
 function setDay(i){ curDay = i; renderPlan(); }
 
+let expandedIds = new Set();
+function toggleFold(id){
+  if(expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
+  renderPlan();
+}
 function tItem(i, idx, len){
   const c = CATS[i.category]||CATS["기타"];
-  const creator = member(i.createdBy);
-  const updater = i.updatedBy && i.updatedBy!==i.createdBy ? member(i.updatedBy) : null;
   const stClass = i.status==="후보"?"cand":(i.status==="완료"?"done":"");
   const stBadge = i.status==="후보" ? `<span class="badge cand">🗳️ 후보</span>`
     : i.status==="완료" ? `<span class="badge done">✔ 완료</span>` : "";
   const myR = i.reactions?.[meId];
   const rCount = e => Object.values(i.reactions||{}).filter(x=>x===e).length;
+  const rTotal = Object.values(i.reactions||{}).length;
+  const cmts = i.comments||[];
+  const open = expandedIds.has(i.id);
+  const cnts = `${i.memo?" 📝":""}${rTotal?" ❤️"+rTotal:""}${cmts.length?" 💬"+cmts.length:""}`;
   return `
   <div class="titem ${stClass}">
     <div class="time-col">${i.startTime||"—"}${i.endTime?`<div class="end">~${i.endTime}</div>`:""}</div>
@@ -1089,18 +1082,45 @@ function tItem(i, idx, len){
           <button class="icon-btn" onclick="openForm('${i.id}')">✏️</button>
         </div>
       </div>
-      ${i.memo?`<div class="memo">${esc(i.memo)}</div>`:""}
       <div class="meta">
         ${stBadge}
         ${i.cost?`<span class="cost">${fmtVnd(i.cost)} <small>(${fmtKrw(i.cost)})</small></span>`:""}
-        <span class="byline">${creator?creator.emoji+" "+esc(creator.nickname)+" 추가":""}${updater?" · "+updater.emoji+" 수정":""}</span>
+        <button class="fold" onclick="toggleFold('${i.id}')">${open?"▴ 접기":"▾ 메모·댓글"}<span class="cnts">${cnts}</span></button>
       </div>
+      ${open?`
+      ${i.memo?`<div class="memo">${esc(i.memo)}</div>`:""}
       <div class="reactions">
         ${["👍","❤️","🤔"].map(e=>`<button class="rbtn ${myR===e?"on":""}" onclick="react('${i.id}','${e}')">${e}${rCount(e)?" "+rCount(e):""}</button>`).join("")}
         ${i.status==="후보" ? `<button class="rbtn" style="margin-left:auto;color:var(--teal-dark);border-color:var(--teal)" onclick="confirmItem('${i.id}')">확정하기 ✓</button>`:""}
       </div>
+      <div style="margin-top:6px">
+        ${cmts.map(cm=>{
+          const m=member(cm.by)||{emoji:"👤",nickname:"멤버"};
+          return `<div class="cmt"><span>${m.emoji}</span><span class="t"><b>${esc(m.nickname)}</b> ${esc(cm.text)}</span><span class="time">${relTime(cm.ts)}</span>${cm.by===meId?`<button class="delc" onclick="delComment('${i.id}','${cm.id}')">✕</button>`:""}</div>`;
+        }).join("")}
+        <div class="cmt-add">
+          <input class="f-input cmt-in" data-id="${i.id}" placeholder="댓글 쓰기…" maxlength="120" onkeydown="if(event.key==='Enter')sendComment('${i.id}')">
+          <button class="btn-mini" onclick="sendComment('${i.id}')">등록</button>
+        </div>
+      </div>`:""}
     </div>
   </div>`;
+}
+function sendComment(id){
+  const inp=document.querySelector(`.cmt-in[data-id="${id}"]`);
+  const text=inp?inp.value.trim():"";
+  if(!text){ if(inp) inp.focus(); return; }
+  const it=S.items.find(x=>x.id===id); if(!it) return;
+  it.comments=it.comments||[];
+  it.comments.push({id:"c"+Date.now(), by:meId, text, ts:Date.now()});
+  addFeed(`'${it.title}'에 댓글을 남겼어요 💬`);
+  expandedIds.add(id);
+  syncItems(it); renderPlan();
+}
+function delComment(itemId, cId){
+  const it=S.items.find(x=>x.id===itemId); if(!it) return;
+  it.comments=(it.comments||[]).filter(c=>c.id!==cId);
+  syncItems(it); renderPlan(); toast("댓글을 삭제했어요");
 }
 
 /* ---------- 일정 조작 ---------- */
@@ -1309,7 +1329,7 @@ function loadFb(){
 }
 function safeRenderAll(){
   const ae=document.activeElement;
-  const typing = ae && (ae.id==="pkText" || (ae.classList&&ae.classList.contains("diary-input")));
+  const typing = ae && (ae.id==="pkText" || (ae.classList&&(ae.classList.contains("diary-input")||ae.classList.contains("cmt-in"))));
   if($("#modalRoot").innerHTML.trim() || typing){ pendingRender=true; return; }
   renderAll();
 }
@@ -1373,8 +1393,13 @@ function attachFb(ref){
   FB.unsub.push(ref.collection("items").onSnapshot(q=>{
     S.items=q.docs.map(d=>d.data()); save(); safeRenderAll();
   }, fbErr));
+  window._feedReady=false;
   FB.unsub.push(ref.collection("feed").orderBy("ts","desc").limit(10).onSnapshot(q=>{
-    S.feed=q.docs.map(d=>d.data()); save(); safeRenderAll();
+    const prevTop=(S.feed[0]&&S.feed[0].ts)||0;
+    S.feed=q.docs.map(d=>d.data());
+    if(window._feedReady) maybeNotify(S.feed.filter(f=>f.ts>prevTop));
+    window._feedReady=true;
+    save(); safeRenderAll();
   }, fbErr));
   FB.unsub.push(ref.collection("pack").onSnapshot(q=>{
     S.pack=q.docs.map(d=>d.data()); save(); safeRenderAll();
@@ -1550,7 +1575,7 @@ function saveFbCfg(){
   toast("설정 저장 완료! 이제 여행방을 만들 수 있어요 🎉");
 }
 function copyCode(){
-  const txt=`푸꾸옥 꼬우! 우리 가족 여행방 초대 코드: ${FB.code}\n앱을 열고 [가족 탭 → 초대 코드로 참여]에 입력해줘 🥥`;
+  const txt=`푸꾸옥 꼬우! 우리 가족 여행방 초대 코드: ${FB.code}\n앱을 열고 [멤버 탭 → 초대 코드로 참여]에 입력해줘 🥥`;
   if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast("초대 메시지를 복사했어요 📋")); }
   else toast("코드: "+FB.code);
 }
@@ -2161,23 +2186,22 @@ async function loadWeather(){
 
 /* ---------- 가족 탭 ---------- */
 function renderFamily(){
+  const expOf = id => S.expenses.filter(x=>x.by===id).reduce((a,x)=>a+(x.cur==="₩"?+x.amt:x.amt*EX_RATE),0);
+  const cmtOf = id => S.items.reduce((a,i)=>a+(i.comments||[]).filter(c=>c.by===id).length,0);
   $("#view-family").innerHTML = `
     <div class="card family-list">
-      <div class="sec-title">👨‍👩‍👧 우리 가족 멤버</div>
+      <div class="sec-title">👥 여행 멤버</div>
       ${S.trip.members.map(m=>`
         <div class="fm">
           <div class="avatar" style="background:${m.color}">${m.emoji}</div>
           <div><div class="nm">${esc(m.nickname)} ${m.id===meId?'<span style="font-size:.72rem;color:var(--coral-dark)">(나)</span>':""}</div>
-          <div class="role">일정 ${S.items.filter(i=>i.createdBy===m.id).length}개 추가</div></div>
+          <div class="role">일정 ${S.items.filter(i=>i.createdBy===m.id).length} · 지출 ${(expOf(m.id)/10000).toFixed(0)}만원 · 댓글 ${cmtOf(m.id)}</div></div>
           ${m.id!==meId?`<button class="swap" onclick="pickMe('${m.id}')">이 사람으로 전환</button>`:""}
         </div>`).join("")}
     </div>
     <div class="card">
-      <div class="sec-title">🔔 최근 변경 내역</div>
-      ${S.feed.length ? S.feed.map(f=>{
-        const m = member(f.who)||{emoji:"👤",nickname:"가족"};
-        return `<div class="feed-item"><span class="who">${m.emoji}</span><span class="txt"><b>${esc(m.nickname)}</b>님이 ${esc(f.txt)}</span><span class="time">${relTime(f.ts)}</span></div>`;
-      }).join("") : `<div class="empty">아직 소식이 없어요</div>`}
+      <div class="sec-title">🔔 새 소식 알림</div>
+      ${notifCard()}
     </div>
     ${shareCard()}
     <div class="card">
@@ -2188,6 +2212,32 @@ function renderFamily(){
     ${FB.on?"":`<div class="card" style="text-align:center">
       <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="resetDemo()">🔄 데모 데이터로 초기화</button>
     </div>`}`;
+}
+function notifCard(){
+  if(!("Notification" in window))
+    return `<div class="imp-hint" style="margin-top:0">이 브라우저는 알림을 지원하지 않아요. (아이폰 Safari는 지원이 제한적이에요 — 갤럭시·PC에서는 잘 작동해요!)</div>`;
+  if(localStorage.getItem("pqgo_notif")==="on" && Notification.permission==="granted")
+    return `<div class="imp-hint" style="margin-top:0">✅ 알림이 켜져 있어요 — 다른 멤버가 일정·지출·댓글을 올리면 알려드려요. (앱이 열려 있거나 백그라운드일 때)</div>
+      <button class="btn-mini" style="width:100%;padding:11px 0;margin-top:8px" onclick="localStorage.removeItem('pqgo_notif');renderFamily();toast('알림을 껐어요')">🔕 알림 끄기</button>`;
+  if(Notification.permission==="denied")
+    return `<div class="imp-hint" style="margin-top:0">⚠️ 알림 권한이 거부돼 있어요. 브라우저 설정에서 이 사이트의 알림을 허용해주세요.</div>`;
+  return `<div class="imp-hint" style="margin-top:0">다른 멤버가 일정·지출·댓글을 올리면 알려드려요. 버튼을 누르면 브라우저가 <b>알림 동의</b>를 물어봐요.</div>
+    <button class="btn-primary" style="margin-top:10px" onclick="enableNotif()">🔔 알림 켜기</button>`;
+}
+async function enableNotif(){
+  if(!("Notification" in window)) return;
+  const p = await Notification.requestPermission();
+  if(p==="granted"){ localStorage.setItem("pqgo_notif","on"); toast("알림이 켜졌어요 🔔"); }
+  else toast("알림이 허용되지 않았어요");
+  renderFamily();
+}
+function maybeNotify(fresh){
+  if(localStorage.getItem("pqgo_notif")!=="on") return;
+  if(!("Notification" in window) || Notification.permission!=="granted") return;
+  fresh.filter(f=>f.who!==meId).slice(0,3).forEach(f=>{
+    const m=member(f.who)||{nickname:"멤버"};
+    try{ new Notification((S.trip.title||"푸꾸옥 꼬우")+" 🥥", {body:`${m.nickname}님이 ${f.txt}`, tag:"pqgo"+f.ts}); }catch(e){}
+  });
 }
 function shareCard(){
   if(FB.on){
