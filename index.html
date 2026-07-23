@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FF7A59">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>푸꾸옥 꼬우 🥥</title>
+<style>
+:root{
+  --cream:#FFF8EF; --cream2:#FFF1DE;
+  --coral:#FF7A59; --coral-dark:#F05B3A; --sunset1:#FF9A62; --sunset2:#FF6B6B;
+  --teal:#17A2A2; --teal-dark:#0E8C8C; --teal-light:#E0F5F4;
+  --ink:#35322E; --ink-soft:#7A736A; --line:#F0E4D3;
+  --white:#FFFFFF; --danger:#E05555; --gold:#F4B400;
+  --shadow:0 2px 10px rgba(90,60,30,.09);
+  --radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  font-family:'Apple SD Gothic Neo','Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--cream); color:var(--ink); line-height:1.5;
+  max-width:520px; margin:0 auto; min-height:100vh; word-break:keep-all;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));
+}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input,select,textarea{font-family:inherit;font-size:1rem}
+.hidden{display:none!important}
+
+/* ---------- 상단 헤더 ---------- */
+.header{
+  background:linear-gradient(135deg,var(--sunset1),var(--sunset2));
+  color:#fff; padding:calc(14px + env(safe-area-inset-top)) 20px 18px;
+  border-radius:0 0 24px 24px; box-shadow:var(--shadow);
+  position:relative; overflow:hidden;
+}
+.header::after{content:"🌴"; position:absolute; right:-6px; bottom:-14px; font-size:5.2rem; opacity:.18; transform:rotate(-12deg)}
+.header h1{font-size:1.45rem; font-weight:800; letter-spacing:-.02em; display:flex; align-items:center; gap:8px}
+.header .sub{font-size:.85rem; opacity:.92; margin-top:2px}
+.header .dday{
+  position:absolute; top:calc(16px + env(safe-area-inset-top)); right:18px;
+  background:rgba(255,255,255,.24); backdrop-filter:blur(4px);
+  border-radius:999px; padding:6px 14px; font-weight:800; font-size:.95rem;
+}
+
+/* ---------- 공통 카드/섹션 ---------- */
+.view{padding:16px 16px 8px; animation:fadein .22s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-bottom:14px}
+.sec-title{font-size:1.02rem; font-weight:800; margin:4px 2px 10px; display:flex; align-items:center; gap:6px}
+.sec-title small{font-weight:600; color:var(--ink-soft); font-size:.8rem; margin-left:auto}
+
+/* ---------- 꼬우 말풍선 ---------- */
+.kkou{display:flex; gap:10px; align-items:flex-start; background:var(--teal-light); border-radius:var(--radius); padding:12px 14px; margin-bottom:14px}
+.kkou .face{font-size:1.9rem; flex-shrink:0; animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.kkou .bubble{font-size:.9rem; color:var(--teal-dark); font-weight:600}
+.kkou .bubble b{color:var(--ink)}
+
+/* ---------- 홈 통계 ---------- */
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px}
+.stat{background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:12px 8px; text-align:center}
+.stat .num{font-size:1.25rem; font-weight:800; color:var(--coral-dark)}
+.stat .lbl{font-size:.75rem; color:var(--ink-soft); font-weight:600; margin-top:2px}
+.member-chips{display:flex; flex-wrap:wrap; gap:8px}
+.mchip{display:flex; align-items:center; gap:6px; border-radius:999px; padding:6px 12px; font-size:.85rem; font-weight:700; color:#fff}
+.mchip.me::after{content:"나"; background:rgba(255,255,255,.3); font-size:.68rem; padding:1px 6px; border-radius:999px}
+
+/* ---------- 변경 피드 ---------- */
+.feed-item{display:flex; gap:10px; padding:9px 2px; border-bottom:1px dashed var(--line); font-size:.86rem; align-items:baseline}
+.feed-item:last-child{border-bottom:none}
+.feed-item .who{flex-shrink:0}
+.feed-item .txt{color:var(--ink)}
+.feed-item .time{margin-left:auto; flex-shrink:0; color:var(--ink-soft); font-size:.72rem}
+.empty{color:var(--ink-soft); font-size:.88rem; text-align:center; padding:18px 0}
+
+/* ---------- DAY 탭 ---------- */
+.day-tabs{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px; scrollbar-width:none}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-tab{
+  flex-shrink:0; background:var(--white); border:2px solid transparent; border-radius:14px;
+  padding:8px 14px; text-align:center; box-shadow:var(--shadow); min-width:74px;
+}
+.day-tab .d{font-weight:800; font-size:.92rem}
+.day-tab .dt{font-size:.7rem; color:var(--ink-soft); font-weight:600}
+.day-tab.active{border-color:var(--coral); background:#FFF0E9}
+.day-tab.active .d{color:var(--coral-dark)}
+.day-head{display:flex; align-items:center; gap:8px; margin:2px 2px 12px}
+.day-head .t{font-weight:800; font-size:1.05rem}
+.day-head .sort-btn{margin-left:auto; font-size:.78rem; font-weight:700; color:var(--teal-dark); background:var(--teal-light); border-radius:999px; padding:6px 12px}
+
+/* ---------- 타임라인 ---------- */
+.timeline{position:relative; padding-left:74px}
+.timeline::before{content:""; position:absolute; left:58px; top:8px; bottom:8px; width:3px; background:var(--line); border-radius:2px}
+.titem{position:relative; margin-bottom:14px}
+.titem .time-col{
+  position:absolute; left:-74px; top:14px; width:52px; text-align:right;
+  font-size:.78rem; font-weight:800; color:var(--ink-soft); line-height:1.25;
+}
+.titem .time-col .end{font-weight:600; font-size:.68rem; opacity:.75}
+.titem .dot{
+  position:absolute; left:-23px; top:16px; width:15px; height:15px; border-radius:50%;
+  background:var(--white); border:4px solid var(--coral); z-index:1;
+}
+.titem.cand .dot{border-color:var(--gold)}
+.titem.done .dot{border-color:#B9B1A6}
+.tcard{background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:13px 14px; position:relative}
+.titem.done .tcard{opacity:.72}
+.tcard .row1{display:flex; align-items:flex-start; gap:9px}
+.tcard .cat{font-size:1.5rem; flex-shrink:0; width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center}
+.tcard .tt{font-weight:800; font-size:1rem; letter-spacing:-.01em}
+.tcard .place{font-size:.8rem; color:var(--ink-soft); margin-top:1px; display:flex; align-items:center; gap:4px}
+.tcard .memo{font-size:.85rem; color:var(--ink); background:var(--cream); border-radius:10px; padding:7px 10px; margin-top:9px; white-space:pre-wrap}
+.tcard .meta{display:flex; align-items:center; gap:8px; margin-top:9px; flex-wrap:wrap}
+.badge{font-size:.7rem; font-weight:800; border-radius:999px; padding:3px 9px}
+.badge.confirm{background:var(--teal-light); color:var(--teal-dark)}
+.badge.cand{background:#FFF3D6; color:#A87900}
+.badge.done{background:#EEEAE4; color:#8A8377}
+.cost{font-size:.78rem; font-weight:700; color:var(--coral-dark)}
+.cost small{color:var(--ink-soft); font-weight:600}
+.byline{font-size:.7rem; color:var(--ink-soft); margin-left:auto}
+.reactions{display:flex; gap:6px; margin-top:10px; align-items:center}
+.rbtn{border-radius:999px; padding:4px 10px; font-size:.82rem; background:var(--cream); border:1.5px solid transparent; font-weight:700; color:var(--ink-soft)}
+.rbtn.on{border-color:var(--coral); background:#FFF0E9; color:var(--coral-dark)}
+.card-actions{display:flex; gap:2px; margin-left:auto}
+.icon-btn{width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; color:var(--ink-soft)}
+.icon-btn:active{background:var(--cream)}
+
+/* ---------- FAB ---------- */
+.fab{
+  position:fixed; right:calc(50% - 250px); bottom:calc(90px + env(safe-area-inset-bottom));
+  width:56px; height:56px; border-radius:50%; z-index:40;
+  background:linear-gradient(135deg,var(--sunset1),var(--sunset2)); color:#fff;
+  font-size:1.7rem; font-weight:700; box-shadow:0 6px 18px rgba(240,91,58,.4);
+  display:flex; align-items:center; justify-content:center;
+}
+@media (max-width:540px){.fab{right:18px}}
+.fab:active{transform:scale(.94)}
+
+/* ---------- 하단 탭 ---------- */
+.tabbar{
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:520px;
+  background:rgba(255,255,255,.96); backdrop-filter:blur(10px);
+  border-top:1px solid var(--line); display:flex; z-index:50;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tab{flex:1; padding:9px 0 7px; text-align:center; color:#B4AB9F}
+.tab .ico{font-size:1.35rem; display:block; filter:grayscale(1); opacity:.65; transition:.15s}
+.tab .lb{font-size:.66rem; font-weight:700; margin-top:1px; display:block}
+.tab.active{color:var(--coral-dark)}
+.tab.active .ico{filter:none; opacity:1; transform:translateY(-2px)}
+
+/* ---------- 모달 ---------- */
+.modal-bg{position:fixed; inset:0; background:rgba(40,30,20,.45); z-index:100; display:flex; align-items:flex-end; justify-content:center; animation:fadein .18s}
+.modal{
+  background:var(--white); width:100%; max-width:520px; border-radius:22px 22px 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto;
+  animation:slideup .22s ease;
+}
+@keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+.modal h2{font-size:1.15rem; font-weight:800; margin-bottom:14px; display:flex; align-items:center; gap:8px}
+.modal h2 .x{margin-left:auto; font-size:1.3rem; color:var(--ink-soft); width:38px; height:38px}
+.f-label{font-size:.8rem; font-weight:800; color:var(--ink-soft); margin:13px 2px 6px; display:block}
+.f-input{width:100%; border:2px solid var(--line); border-radius:12px; padding:11px 12px; background:var(--cream); font-weight:600}
+.f-input:focus{outline:none; border-color:var(--coral); background:#fff}
+textarea.f-input{resize:vertical; min-height:64px}
+.f-row{display:flex; gap:10px}
+.f-row>*{flex:1}
+.cat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+.cat-opt{border:2px solid var(--line); border-radius:12px; padding:8px 2px; text-align:center; background:var(--cream)}
+.cat-opt .e{font-size:1.3rem; display:block}
+.cat-opt .n{font-size:.7rem; font-weight:700; color:var(--ink-soft)}
+.cat-opt.sel{border-color:var(--coral); background:#FFF0E9}
+.cat-opt.sel .n{color:var(--coral-dark)}
+.seg{display:flex; background:var(--cream); border-radius:12px; padding:4px; gap:4px}
+.seg button{flex:1; border-radius:9px; padding:9px 0; font-weight:800; font-size:.88rem; color:var(--ink-soft)}
+.seg button.sel{background:#fff; color:var(--coral-dark); box-shadow:var(--shadow)}
+.krw-hint{font-size:.78rem; color:var(--teal-dark); font-weight:700; margin-top:5px; min-height:1.1em}
+.btn-primary{
+  width:100%; margin-top:20px; padding:15px; border-radius:14px; font-size:1.05rem; font-weight:800; color:#fff;
+  background:linear-gradient(135deg,var(--sunset1),var(--sunset2)); box-shadow:0 4px 14px rgba(240,91,58,.35);
+}
+.btn-primary:active{transform:scale(.98)}
+.btn-danger-line{width:100%; margin-top:10px; padding:12px; border-radius:14px; font-weight:800; color:var(--danger); background:#FDEDED}
+
+/* ---------- 확인/토스트 ---------- */
+.confirm-box{background:#fff; border-radius:20px; padding:22px; margin:auto 24px; max-width:340px; text-align:center; animation:slideup .2s}
+.confirm-box .big{font-size:2.2rem}
+.confirm-box p{font-weight:700; margin:8px 0 18px}
+.confirm-box .btns{display:flex; gap:10px}
+.confirm-box .btns button{flex:1; padding:12px; border-radius:12px; font-weight:800}
+.b-gray{background:var(--cream); color:var(--ink-soft)}
+.b-red{background:var(--danger); color:#fff}
+.toast{
+  position:fixed; bottom:calc(84px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
+  background:var(--ink); color:#fff; border-radius:999px; padding:11px 18px; font-size:.88rem; font-weight:700;
+  display:flex; gap:14px; align-items:center; z-index:200; box-shadow:0 6px 18px rgba(0,0,0,.25);
+  animation:slideup .2s; white-space:nowrap;
+}
+.toast button{color:#FFD08A; font-weight:800; font-size:.88rem}
+
+/* ---------- 온보딩 ---------- */
+.onboard{position:fixed; inset:0; background:linear-gradient(160deg,#FFB37D,#FF6B6B 60%,#E85D75); z-index:300; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px; text-align:center; color:#fff}
+.onboard .logo{font-size:4rem; animation:bob 2.6s ease-in-out infinite}
+.onboard h1{font-size:1.7rem; font-weight:900; margin:10px 0 4px; letter-spacing:-.02em}
+.onboard p{font-weight:600; opacity:.94; margin-bottom:26px}
+.ob-input{width:100%; max-width:340px; border:none; border-radius:14px; padding:14px; font-size:1.05rem; font-weight:700; text-align:center; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.ob-input:focus{outline:3px solid rgba(255,255,255,.7)}
+.emoji-grid{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:340px; margin-bottom:20px}
+.eopt{width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,.25); font-size:1.5rem; display:flex; align-items:center; justify-content:center; border:2.5px solid transparent; transition:.12s}
+.eopt.sel{background:#fff; border-color:#fff; transform:scale(1.1)}
+.ob-btn{background:#fff; color:var(--coral-dark); font-weight:900; font-size:1.05rem; border-radius:999px; padding:14px 44px; box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.ob-btn:active{transform:scale(.96)}
+.fx-row{display:flex; justify-content:space-between; padding:7px 2px; border-bottom:1px dashed var(--line); font-size:.92rem; font-weight:700}
+.fx-row:last-child{border-bottom:none}
+.fx-row .v{color:var(--coral-dark); font-weight:800}
+
+/* ---------- 준비물 ---------- */
+.prog{height:10px; background:var(--cream2); border-radius:999px; overflow:hidden; margin:8px 0 2px}
+.prog>div{height:100%; background:linear-gradient(90deg,var(--sunset1),var(--sunset2)); border-radius:999px; transition:width .3s}
+.pk{display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px dashed var(--line)}
+.pk:last-child{border-bottom:none}
+.pk input[type=checkbox]{width:22px; height:22px; accent-color:var(--teal); flex-shrink:0}
+.pk .tx{font-weight:700; font-size:.92rem}
+.pk.done .tx{text-decoration:line-through; color:var(--ink-soft); font-weight:600}
+.pk .who2{font-size:.7rem; color:var(--ink-soft); margin-left:auto; flex-shrink:0}
+.pk .del{color:var(--ink-soft); font-size:.9rem; width:30px; height:30px; flex-shrink:0; border-radius:8px}
+.pk .del:active{background:var(--cream)}
+.addrow{display:flex; gap:8px}
+.addrow input{flex:1; min-width:0}
+.addrow select{flex:0 0 104px}
+/* ---------- 경비 차트 & 환율 ---------- */
+.costbar{display:flex; align-items:center; gap:8px; padding:5px 0}
+.costbar .lbl2{flex:0 0 78px; font-size:.8rem; font-weight:700}
+.costbar .track{flex:1; height:14px; background:var(--cream); border-radius:4px}
+.costbar .fill{height:100%; background:var(--coral); border-radius:0 4px 4px 0; min-width:2px}
+.costbar .val{flex:0 0 66px; text-align:right; font-size:.74rem; font-weight:700; color:var(--ink-soft)}
+.conv{display:flex; gap:8px; align-items:center; margin-top:12px}
+.conv input{text-align:right; min-width:0}
+.conv span{flex-shrink:0; font-weight:800; color:var(--ink-soft); font-size:.85rem}
+/* ---------- 날씨 ---------- */
+.wx{display:flex; gap:8px; overflow-x:auto; padding-top:4px; scrollbar-width:none}
+.wx::-webkit-scrollbar{display:none}
+.wx .wd{flex:0 0 72px; background:var(--cream); border-radius:12px; padding:8px 4px; text-align:center}
+.wx .wd .e2{font-size:1.5rem; line-height:1.3}
+.wx .wd .t1{font-size:.8rem; font-weight:800}
+.wx .wd .t2{font-size:.66rem; color:var(--ink-soft); font-weight:600}
+/* ---------- 추억 앨범 ---------- */
+.mem-day{padding:10px 0; border-bottom:1px dashed var(--line)}
+.mem-day:last-child{border-bottom:none}
+.diary-input{width:100%; border:2px solid var(--line); border-radius:12px; background:#fff; padding:10px; font-size:.9rem; font-family:inherit; min-height:54px; margin-top:8px; resize:vertical}
+.diary-input:focus{outline:none; border-color:var(--coral)}
+
+/* ---------- 가져오기 & 장소 검색 ---------- */
+.searchrow{display:flex; gap:8px}
+.searchrow .f-input{flex:1; min-width:0}
+.btn-mini{flex-shrink:0; background:var(--teal-light); color:var(--teal-dark); font-weight:800; border-radius:12px; padding:0 14px; font-size:.85rem}
+.btn-mini:active{transform:scale(.96)}
+.res-item{display:flex; gap:10px; align-items:center; padding:10px 4px; border-bottom:1px dashed var(--line); width:100%; text-align:left}
+.res-item:last-child{border-bottom:none}
+.res-item:active{background:var(--cream)}
+.res-item .pin{font-size:1.15rem; flex-shrink:0}
+.res-item .nm2{font-weight:800; font-size:.9rem}
+.res-item .ad{font-size:.74rem; color:var(--ink-soft)}
+.res-item .go{margin-left:auto; color:var(--coral-dark); font-weight:800; flex-shrink:0}
+.imp-hint{font-size:.78rem; color:var(--ink-soft); background:var(--cream); border-radius:10px; padding:9px 11px; margin-top:8px; line-height:1.55}
+.imp-msg{font-size:.85rem; font-weight:700; padding:12px 4px; color:var(--ink-soft)}
+.prev-item{display:flex; gap:10px; align-items:center; padding:9px 2px; border-bottom:1px dashed var(--line)}
+.prev-item:last-child{border-bottom:none}
+.prev-item input[type=checkbox]{width:20px; height:20px; accent-color:var(--coral); flex-shrink:0}
+.prev-item .pi-t{font-weight:800; font-size:.9rem}
+.prev-item .pi-s{font-size:.74rem; color:var(--ink-soft)}
+.spin{display:inline-block; animation:spinr 1s linear infinite}
+@keyframes spinr{to{transform:rotate(360deg)}}
+.rules-box{background:#2E2A25; color:#EDE6DA; border-radius:12px; padding:12px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.68rem; line-height:1.55; white-space:pre; overflow-x:auto; margin-top:8px}
+
+/* ---------- 지도 탭 ---------- */
+.map-chips{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px; scrollbar-width:none}
+.map-chips::-webkit-scrollbar{display:none}
+.mchip2{flex-shrink:0; background:var(--white); border:2px solid transparent; border-radius:999px; padding:7px 14px; font-weight:800; font-size:.85rem; box-shadow:var(--shadow); color:var(--ink-soft)}
+.mchip2.active{border-color:var(--coral); color:var(--coral-dark); background:#FFF0E9}
+.mchip2 .dotc{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:1px}
+#mapBox{height:44vh; min-height:300px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); background:linear-gradient(160deg,#BEE4EC,#9FD4E0); position:relative; z-index:0}
+.mk{width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:.8rem; border:2.5px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.mk.small{width:19px; height:19px; font-size:.6rem; border-width:2px}
+.map-note{font-size:.72rem; color:var(--ink-soft); text-align:center; margin-top:8px}
+.play-bar{display:flex; align-items:center; gap:10px; background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:10px 14px; margin-top:12px}
+.play-btn{width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,var(--sunset1),var(--sunset2)); color:#fff; font-size:1.05rem; flex-shrink:0; box-shadow:0 3px 10px rgba(240,91,58,.35)}
+.play-btn:active{transform:scale(.94)}
+.play-bar input[type=range]{flex:1; accent-color:var(--coral); min-width:0}
+.play-time{font-weight:800; font-size:.92rem; color:var(--coral-dark); min-width:50px; text-align:right}
+.play-now{font-size:.78rem; font-weight:700; color:var(--ink-soft); margin-top:6px; text-align:center; min-height:1.2em}
+.seg{display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px dashed var(--line); font-size:.86rem}
+.seg:last-child{border-bottom:none}
+.seg .n{flex-shrink:0; width:22px; height:22px; border-radius:50%; color:#fff; font-weight:800; font-size:.7rem; display:flex; align-items:center; justify-content:center}
+.seg .tt2{font-weight:700; font-size:.85rem}
+.seg .info{color:var(--ink-soft); font-size:.76rem}
+.seg .warn{margin-left:auto; font-size:.68rem; font-weight:800; color:#A85B00; background:#FFF3D6; border-radius:999px; padding:3px 9px; flex-shrink:0}
+.day-sum{display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px dashed var(--line); font-size:.88rem; font-weight:700; width:100%; text-align:left}
+.day-sum:last-child{border-bottom:none}
+.day-sum .info{margin-left:auto; color:var(--ink-soft); font-size:.76rem; font-weight:600}
+.nocoord{font-size:.85rem; padding:8px 2px; border-bottom:1px dashed var(--line); display:flex; gap:8px; align-items:center}
+.nocoord:last-child{border-bottom:none}
+.nocoord .fix{margin-left:auto; font-size:.72rem; font-weight:800; color:var(--teal-dark); background:var(--teal-light); border-radius:999px; padding:5px 10px; flex-shrink:0}
+.svg-mk{position:absolute; transform:translate(-50%,-50%); z-index:3}
+.mover{width:18px; height:18px; border-radius:50%; background:#fff; border:4px solid var(--coral-dark); box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.svg-mover{position:absolute; transform:translate(-50%,-50%); z-index:5}
+.leaflet-div-icon{background:transparent!important; border:none!important}
+
+/* ---------- 자리표시(지도/준비물/가족) ---------- */
+.placeholder{text-align:center; padding:44px 20px}
+.placeholder .big{font-size:3.4rem; display:block; margin-bottom:10px}
+.placeholder h3{font-weight:800; font-size:1.1rem; margin-bottom:6px}
+.placeholder p{color:var(--ink-soft); font-size:.88rem}
+.stage-badge{display:inline-block; margin-top:14px; background:var(--teal-light); color:var(--teal-dark); font-weight:800; font-size:.78rem; border-radius:999px; padding:6px 14px}
+.family-list .fm{display:flex; align-items:center; gap:12px; padding:11px 2px; border-bottom:1px dashed var(--line)}
+.family-list .fm:last-child{border-bottom:none}
+.family-list .avatar{width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:#fff; flex-shrink:0}
+.family-list .nm{font-weight:800}
+.family-list .role{font-size:.75rem; color:var(--ink-soft)}
+.family-list .swap{margin-left:auto; font-size:.75rem; font-weight:800; color:var(--teal-dark); background:var(--teal-light); border-radius:999px; padding:6px 12px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1><span id="appTitle">푸꾸옥 꼬우!</span> <span style="font-size:1.1rem">🥥</span></h1>
+  <div class="sub" id="tripDates" onclick="openTripSettings()" style="cursor:pointer"></div>
+  <div class="sub" id="todayLine" style="font-size:.78rem; opacity:.85; margin-top:1px"></div>
+  <div class="dday" id="dday"></div>
+</header>
+
+<main id="view-home" class="view"></main>
+<main id="view-plan" class="view hidden"></main>
+<main id="view-map" class="view hidden"></main>
+<main id="view-pack" class="view hidden"></main>
+<main id="view-family" class="view hidden"></main>
+
+<button class="fab" id="fab" onclick="openForm()">＋</button>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab active" data-v="home"><span class="ico">🏠</span><span class="lb">홈</span></button>
+  <button class="tab" data-v="plan"><span class="ico">📅</span><span class="lb">일정</span></button>
+  <button class="tab" data-v="map"><span class="ico">🗺️</span><span class="lb">지도</span></button>
+  <button class="tab" data-v="pack"><span class="ico">✅</span><span class="lb">준비물</span></button>
+  <button class="tab" data-v="family"><span class="ico">👨‍👩‍👧</span><span class="lb">가족</span></button>
+</nav>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+<div id="onboardRoot"></div>
+
+<script>
+/* ================================================================
+   푸꾸옥 꼬우! — 완성본 (1~5단계)
+   1단계: UI+일정 CRUD / 2단계: 지도 동선 / 3단계: 가져오기
+   4단계: 가족 실시간 공유(Firebase) / 5단계: 준비물·경비·날씨·추억 앨범
+   ================================================================ */
+"use strict";
+
+/* ---------- 설정 ---------- */
+let EX_RATE = 0.056;              // 1 VND ≈ KRW — 실시간 환율 수신 시 자동 갱신
+try{ const _fx=JSON.parse(localStorage.getItem("pqgo_fx")||"null"); if(_fx&&_fx.krw&&_fx.vnd) EX_RATE=_fx.krw/_fx.vnd; }catch(e){}
+const STORE_KEY = "pqgo_v1";
+const CATS = {
+  "관광":{e:"🏝️",bg:"#E7F6F0"}, "식사":{e:"🍜",bg:"#FFF0E4"},
+  "카페":{e:"☕",bg:"#F3EBE0"}, "숙소":{e:"🏨",bg:"#EDF0FA"},
+  "이동":{e:"🚕",bg:"#FFF6D9"}, "액티비티":{e:"🤿",bg:"#E4F2FB"},
+  "쇼핑":{e:"🛍️",bg:"#FBEAF3"}, "기타":{e:"📌",bg:"#EFEFEA"},
+};
+const DAY_COLORS = ["#FF7A59","#17A2A2","#F4B400","#8E7CC3","#6AA84F","#E06666","#3D85C6"];
+/* 유명 장소 좌표 사전 — 이름이 일치하면 자동으로 지도에 표시 */
+const PLACE_COORDS = {
+  "인천 → 푸꾸옥":{lat:10.1698,lng:103.9934},
+  "푸꾸옥 국제공항":{lat:10.1698,lng:103.9934},
+  "푸꾸옥 → 인천":{lat:10.1698,lng:103.9934},
+  "윈덤 그랜드월드 호텔":{lat:10.3345,lng:103.8585},
+  "호텔":{lat:10.3345,lng:103.8585},
+  "호텔 뷔페":{lat:10.3345,lng:103.8585},
+  "숙소 근처 스파":{lat:10.3320,lng:103.8600},
+  "Dinh Cau Night Market":{lat:10.2158,lng:103.9584},
+  "VinWonders Phu Quoc":{lat:10.3296,lng:103.8622},
+  "Vinpearl Safari":{lat:10.3541,lng:103.8709},
+  "Grand World Phu Quoc":{lat:10.3364,lng:103.8580},
+  "안터이 선착장":{lat:10.0128,lng:104.0086},
+  "Hon Thom Cable Car":{lat:9.9660,lng:104.0139},
+  "Aquatopia Water Park":{lat:9.9576,lng:104.0163},
+  "Sao Beach":{lat:10.0553,lng:104.0369},
+  "Sunset Town":{lat:10.0166,lng:104.0075},
+  "Ngoc Hien Pearl Farm":{lat:10.1310,lng:103.9670},
+  "Bun Cha Hanoi":{lat:10.2139,lng:103.9620},
+};
+const KKOU_TIPS = [
+  "푸꾸옥 선셋은 <b>선셋타운 키스교</b>가 최고예요! 저녁 일정 비워두는 거 어때요?",
+  "혼똔 케이블카는 <b>오전</b>이 한산해요. 세계에서 가장 긴 해상 케이블카랍니다!",
+  "야시장 갈 땐 <b>현금(동)</b> 챙기세요. 흥정도 잊지 마세요 😉",
+  "일정 사이사이 <b>쉬는 시간</b>도 넣어야 가족 모두 행복한 여행이 돼요!",
+  "그랜드월드 야간 분수쇼는 <b>저녁 9시</b>쯤이에요. 미리 자리 잡아요!",
+];
+
+/* ---------- 데모 데이터 ---------- */
+function demoData(){
+  const M = [
+    {id:"m1", nickname:"아빠", emoji:"🧔", color:"#3D85C6"},
+    {id:"m2", nickname:"엄마", emoji:"👩", color:"#E06666"},
+    {id:"m3", nickname:"히웅", emoji:"🙋", color:"#FF7A59"},
+    {id:"m4", nickname:"동생", emoji:"👧", color:"#6AA84F"},
+  ];
+  const trip = {
+    title:"푸꾸옥 꼬우!",
+    startDate:"2026-12-23", endDate:"2026-12-27",
+    members:M,
+  };
+  let n = 0;
+  const it = (day,st,et,title,cat,place,memo,cost,status,by,reacts)=>({
+    id:"d"+(++n), dayIndex:day, startTime:st, endTime:et, title, category:cat,
+    place: place?{name:place, ...(PLACE_COORDS[place]||{})}:null, memo:memo||"", cost:cost||0,
+    status:status||"확정", createdBy:by||"m3", updatedBy:null,
+    updatedAt:Date.now()-n*60000, order:n, reactions:reacts||{},
+  });
+  const items = [
+    // DAY 1
+    it(0,"07:30","09:00","인천공항 3터미널 집합","이동",null,"E카운터 앞! 늦지 말기 🛫",0,"확정","m1"),
+    it(0,"10:20","15:30","비행기 탑승 (VJ975)","이동","인천 → 푸꾸옥","기내식 없음, 샌드위치 챙기기",0,"확정","m2"),
+    it(0,"16:30","17:30","숙소 체크인","숙소","윈덤 그랜드월드 호텔","예약번호 #88231, 여권 필요",0,"확정","m3",{m1:"👍",m2:"👍"}),
+    it(0,"19:00","21:00","진꺼우 야시장 저녁","식사","Dinh Cau Night Market","해산물 구이 + 코코넛 아이스크림 🍦",800000,"확정","m3",{m4:"❤️"}),
+    // DAY 2
+    it(1,"08:00","09:00","호텔 조식","식사","호텔 뷔페","",0,"확정","m2"),
+    it(1,"09:30","13:00","빈원더스 원더월드","액티비티","VinWonders Phu Quoc","워터파크 준비물: 수영복, 방수팩",1400000,"확정","m4",{m1:"👍",m3:"👍",m2:"❤️"}),
+    it(1,"13:00","14:00","파크 안 점심","식사",null,"",600000,"확정","m4"),
+    it(1,"15:00","17:30","빈펄 사파리","관광","Vinpearl Safari","기린 먹이주기 체험 예약!",1000000,"후보","m3",{m4:"👍",m2:"🤔"}),
+    it(1,"20:00","21:30","그랜드월드 야경 + 분수쇼","관광","Grand World Phu Quoc","베네치아 곤돌라 타보기?",300000,"확정","m1"),
+    // DAY 3
+    it(2,"09:00","10:00","혼똔 케이블카 타러 이동","이동","안터이 선착장","택시 30분, 그랩 예약",250000,"확정","m1"),
+    it(2,"10:00","12:00","혼똔 케이블카 + 전망","액티비티","Hon Thom Cable Car","세계 최장 해상 케이블카 🚡",1200000,"확정","m3",{m1:"❤️",m2:"❤️",m4:"👍"}),
+    it(2,"12:00","15:00","아쿠아토피아 워터파크","액티비티","Aquatopia Water Park","혼똔섬 안에 있음",0,"후보","m4",{m3:"👍"}),
+    it(2,"16:00","18:00","사오 비치","관광","Sao Beach","스타피쉬! 사진 명소 ⭐",0,"확정","m2"),
+    it(2,"18:30","21:00","선셋타운 키스교 불쇼","관광","Sunset Town","저녁+선셋+불꽃쇼 (21:15 시작)",500000,"확정","m3",{m1:"👍",m2:"👍",m4:"❤️"}),
+    // DAY 4
+    it(3,"09:30","11:30","푸꾸옥 진주농장","쇼핑","Ngoc Hien Pearl Farm","엄마 선물 찾아보기 🦪",0,"후보","m1",{m2:"❤️",m3:"🤔"}),
+    it(3,"12:00","13:30","분짜 & 반쎄오 점심","식사","Bun Cha Hanoi","현지인 맛집이래요",400000,"확정","m3"),
+    it(3,"14:30","16:30","가족 스파 타임","액티비티","숙소 근처 스파","마사지 4인 예약 필요",1600000,"확정","m2",{m1:"❤️",m3:"❤️",m4:"❤️"}),
+    it(3,"19:00","21:00","마지막 밤 — 야시장 쇼핑","쇼핑","Dinh Cau Night Market","기념품: 후추, 캐슈넛, 코코넛 캔디",600000,"확정","m4"),
+    // DAY 5
+    it(4,"10:00","11:00","체크아웃 & 짐 정리","숙소","호텔","미니바 확인!",0,"확정","m2"),
+    it(4,"12:30","13:30","공항 이동","이동","푸꾸옥 국제공항","그랩 밴 호출",300000,"확정","m1"),
+    it(4,"15:40","22:30","귀국 비행 (VJ974)","이동","푸꾸옥 → 인천","면세점에서 남은 동 쓰기",0,"확정","m3"),
+  ];
+  const pack = [
+    {id:"p1", text:"여권 (전원!)", owner:null, done:false, createdBy:"m2"},
+    {id:"p2", text:"동(VND)·달러 환전", owner:null, done:true, createdBy:"m1"},
+    {id:"p3", text:"상비약 (멀미약·지사제·해열제)", owner:null, done:false, createdBy:"m2"},
+    {id:"p4", text:"선크림 SPF50 + 알로에젤", owner:null, done:false, createdBy:"m4"},
+    {id:"p5", text:"보조배터리·충전 케이블", owner:null, done:false, createdBy:"m1"},
+    {id:"p6", text:"수영복 & 래시가드", owner:"m3", done:false, createdBy:"m3"},
+    {id:"p7", text:"방수팩", owner:"m3", done:true, createdBy:"m3"},
+    {id:"p8", text:"카메라 + 충전기", owner:"m1", done:false, createdBy:"m1"},
+    {id:"p9", text:"물놀이 튜브", owner:"m4", done:false, createdBy:"m4"},
+  ];
+  return { trip, items, pack, diary:{}, feed:[
+    {who:"m3", txt:"'선셋타운 키스교 불쇼' 일정을 추가했어요", ts:Date.now()-3600e3},
+    {who:"m2", txt:"'가족 스파 타임' 일정을 추가했어요", ts:Date.now()-7200e3},
+    {who:"m1", txt:"'푸꾸옥 진주농장'을 후보로 올렸어요", ts:Date.now()-10800e3},
+  ]};
+}
+
+/* ---------- 상태 ---------- */
+let S = load();
+let meId = localStorage.getItem("pqgo_me") || null;
+let curView = "home";
+let curDay = 0;
+let undoBuf = null, undoTimer = null;
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d && d.trip && d.items){
+        // 마이그레이션: 좌표 없는 장소는 좌표 사전에서 자동 채움
+        d.items.forEach(it=>{
+          if(it.place && it.place.name && it.place.lat==null){
+            const c = PLACE_COORDS[it.place.name];
+            if(c) Object.assign(it.place, c);
+          }
+        });
+        if(!d.pack) d.pack = [];
+        if(!d.diary) d.diary = {};
+        return d;
+      }
+    }
+  }catch(e){}
+  return demoData();
+}
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }
+
+/* ---------- 유틸 ---------- */
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const member = id => S.trip.members.find(m=>m.id===id);
+const fmtVnd = v => v ? Number(v).toLocaleString("vi-VN")+"₫" : "";
+const fmtKrw = v => v ? "약 "+Math.round(v*EX_RATE).toLocaleString("ko-KR")+"원" : "";
+function dayCount(){
+  return Math.round((new Date(S.trip.endDate) - new Date(S.trip.startDate))/86400e3)+1;
+}
+function dayDate(i){
+  const d = new Date(S.trip.startDate+"T00:00:00"); d.setDate(d.getDate()+i); return d;
+}
+function fmtDate(d, opt){ return d.toLocaleDateString("ko-KR", opt||{month:"long",day:"numeric",weekday:"short"}); }
+function relTime(ts){
+  const m = Math.round((Date.now()-ts)/60000);
+  if(m<1) return "방금"; if(m<60) return m+"분 전";
+  const h = Math.round(m/60); if(h<24) return h+"시간 전";
+  return Math.round(h/24)+"일 전";
+}
+function dayItems(i){
+  return S.items.filter(x=>x.dayIndex===i).sort((a,b)=>(a.order-b.order));
+}
+function addFeed(txt){
+  const e = {who:meId, txt, ts:Date.now()};
+  S.feed.unshift(e);
+  S.feed = S.feed.slice(0,10);
+  if(FB.on) roomRef().collection("feed").add(e).catch(()=>{});
+}
+function toast(msg, undoFn){
+  const root = $("#toastRoot");
+  root.innerHTML = `<div class="toast">${esc(msg)}${undoFn?'<button id="undoBtn">되돌리기</button>':""}</div>`;
+  if(undoFn) $("#undoBtn").onclick = ()=>{ undoFn(); root.innerHTML=""; };
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>root.innerHTML="", 5000);
+}
+
+/* ---------- 온보딩 (나는 누구?) ---------- */
+function renderOnboard(){
+  const root = $("#onboardRoot");
+  if(meId && member(meId)){ root.innerHTML=""; return; }
+  const emojis = ["🙋","🧔","👩","👧","👦","👴","👵","🧑"];
+  root.innerHTML = `
+  <div class="onboard">
+    <div class="logo">🥥</div>
+    <h1>푸꾸옥 꼬우!</h1>
+    <p>우리 가족 여행 플래너에 오신 걸 환영해요.<br>이름(닉네임)을 알려주세요!</p>
+    <input class="ob-input" id="obName" placeholder="예: 히웅, 엄마, 이모…" maxlength="8"
+      onkeydown="if(event.key==='Enter')enterApp()">
+    <div class="emoji-grid">
+      ${emojis.map((e,i)=>`<button class="eopt ${i===0?"sel":""}">${e}</button>`).join("")}
+    </div>
+    <button class="ob-btn" onclick="enterApp()">시작하기 →</button>
+  </div>`;
+  root.querySelectorAll(".eopt").forEach(b=>b.onclick=()=>{
+    root.querySelectorAll(".eopt").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  setTimeout(()=>{ const i=$("#obName"); if(i) i.focus(); },300);
+}
+function enterApp(){
+  const inp = $("#obName");
+  const name = inp.value.trim();
+  if(!name){ inp.style.outline="3px solid #fff"; inp.focus(); return; }
+  const emoji = (document.querySelector(".eopt.sel")||{textContent:"🙋"}).textContent;
+  let m = S.trip.members.find(x=>x.nickname===name);   // 같은 이름이면 그 멤버로 접속
+  if(!m){
+    m = {id:"u"+Date.now(), nickname:name, emoji, color:DAY_COLORS[S.trip.members.length%7]};
+    S.trip.members.push(m);
+    if(FB.on){
+      try{ roomRef().update({members:firebase.firestore.FieldValue.arrayUnion(JSON.parse(JSON.stringify(m)))}); }catch(e){}
+    }
+    save();
+  }
+  meId = m.id; localStorage.setItem("pqgo_me", meId);
+  renderOnboard(); renderAll();
+  toast(`${m.emoji} ${m.nickname}님, 환영해요!`);
+}
+function pickMe(id){
+  meId = id; localStorage.setItem("pqgo_me", id);
+  renderOnboard(); renderAll();
+  toast(member(id).emoji+" "+member(id).nickname+"님, 환영해요!");
+}
+
+/* ---------- 탭 전환 ---------- */
+document.querySelectorAll(".tab").forEach(b=>{
+  b.onclick = ()=>{
+    curView = b.dataset.v;
+    document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t===b));
+    ["home","plan","map","pack","family"].forEach(v=>{
+      $("#view-"+v).classList.toggle("hidden", v!==curView);
+    });
+    $("#fab").classList.toggle("hidden", !(curView==="home"||curView==="plan"));
+    renderAll();
+    window.scrollTo({top:0});
+  };
+});
+
+/* ---------- 헤더 ---------- */
+function renderHeader(){
+  const s = new Date(S.trip.startDate+"T00:00:00"), e = new Date(S.trip.endDate+"T00:00:00");
+  $("#appTitle").textContent = S.trip.title || "푸꾸옥 꼬우!";
+  $("#tripDates").textContent =
+    `${fmtDate(s,{month:"numeric",day:"numeric"})} ~ ${fmtDate(e,{month:"numeric",day:"numeric"})} · ${dayCount()-1}박 ${dayCount()}일 · 가족 ${S.trip.members.length}명 ✏️`;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dd = Math.round((s-today)/86400e3);
+  $("#dday").textContent = dd>0 ? `D-${dd} 🥥` : (today<=e ? "여행 중! 🏖️" : "다녀왔어요 ✨");
+  $("#todayLine").textContent = "오늘은 " + new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"long"});
+}
+
+/* ---------- 홈 ---------- */
+function renderHome(){
+  const total = S.items.length;
+  const cand = S.items.filter(i=>i.status==="후보").length;
+  const costK = Math.round(S.items.reduce((a,i)=>a+(+i.cost||0),0)*EX_RATE);
+  const s = new Date(S.trip.startDate+"T00:00:00");
+  const e = new Date(S.trip.endDate+"T00:00:00");
+  const today = new Date(); today.setHours(0,0,0,0);
+  const over = today > e;
+  const tip = over ? "여행 다녀오느라 고생했어요! 아래 <b>추억 앨범</b>에 한 줄씩 남겨봐요 ✍️"
+    : KKOU_TIPS[new Date().getDate() % KKOU_TIPS.length];
+  const curIdx = Math.min(Math.max(Math.round((today-s)/86400e3),0), dayCount()-1);
+  const preview = dayItems(today<s?0:curIdx).slice(0,3);
+
+  /* 경비 차트 (카테고리별) */
+  const catTotals = Object.keys(CATS)
+    .map(k=>({k, v:S.items.reduce((a,i)=>a+(i.category===k?(+i.cost||0):0),0)}))
+    .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const totalV = catTotals.reduce((a,x)=>a+x.v,0);
+  const costCard = `
+    <div class="card">
+      <div class="sec-title">💰 예상 경비 <small>${totalV?fmtVnd(totalV)+" · "+fmtKrw(totalV):"아직 없음"}</small></div>
+      ${catTotals.map(x=>`
+        <div class="costbar">
+          <span class="lbl2">${CATS[x.k].e} ${x.k}</span>
+          <div class="track"><div class="fill" style="width:${Math.round(x.v/catTotals[0].v*100)}%"></div></div>
+          <span class="val">${(x.v*EX_RATE/10000).toFixed(1)}만원</span>
+        </div>`).join("")}
+      <div class="conv">
+        <input class="f-input" id="cvV" inputmode="numeric" placeholder="동 (VND)">
+        <span>₫ ≈</span>
+        <input class="f-input" id="cvK" readonly placeholder="원 (KRW)">
+      </div>
+      <div class="map-note">간이 환율 1만₫ ≈ ${(10000*EX_RATE).toFixed(0)}원 — 여행 전 최신 환율을 확인하세요</div>
+    </div>`;
+
+  /* 추억 앨범 (여행 종료 후) */
+  const memCard = !over ? "" : `
+    <div class="card">
+      <div class="sec-title">📸 우리 가족 추억 앨범</div>
+      ${Array.from({length:dayCount()},(_,i)=>{
+        const its=dayItems(i);
+        const loved=its.map(it=>({it,n:Object.values(it.reactions||{}).length})).sort((a,b)=>b.n-a.n)[0];
+        return `<div class="mem-day">
+          <b>DAY ${i+1} · ${fmtDate(dayDate(i),{month:"numeric",day:"numeric"})}</b>
+          <span style="font-size:.75rem;color:var(--ink-soft)"> · 일정 ${its.length}개${loved&&loved.n?` · 최고 인기 ❤️ ${esc(loved.it.title)}`:""}</span>
+          <textarea class="diary-input" data-day="${i}" placeholder="이 날의 추억을 한 줄 남겨보세요 ✍️">${esc(S.diary[i]||"")}</textarea>
+        </div>`;
+      }).join("")}
+    </div>`;
+
+  $("#view-home").innerHTML = `
+    <div class="kkou"><div class="face">🥥</div><div class="bubble">${tip}</div></div>
+    ${memCard}
+    <div class="stats">
+      <div class="stat"><div class="num">${total}</div><div class="lbl">전체 일정</div></div>
+      <div class="stat"><div class="num">${cand}</div><div class="lbl">투표 중 🗳️</div></div>
+      <div class="stat"><div class="num">${costK ? (costK/10000).toFixed(0)+"만원" : "0"}</div><div class="lbl">예상 경비</div></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">💱 오늘 환율 <small>실시간</small></div>
+      <div id="fxBox"><div class="empty">불러오는 중…</div></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">👨‍👩‍👧 함께 가는 가족</div>
+      <div class="member-chips">
+        ${S.trip.members.map(m=>`<span class="mchip ${m.id===meId?"me":""}" style="background:${m.color}">${m.emoji} ${esc(m.nickname)}</span>`).join("")}
+      </div>
+    </div>
+    ${over?"":`<div class="card">
+      <div class="sec-title">${today<s ? "🌅 첫날 미리보기" : "📌 오늘 일정"}<small onclick="goPlan(${today<s?0:curIdx})" style="cursor:pointer">전체 보기 ›</small></div>
+      ${preview.length ? preview.map(miniCard).join("") : `<div class="empty">아직 일정이 없어요. ＋ 버튼으로 추가해보세요!</div>`}
+    </div>`}
+    ${costCard}
+    ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
+    <div class="card">
+      <div class="sec-title">🍜 내 주변 맛집</div>
+      <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, 현재 위치에서 가까운 음식점을 찾아 <b>구글지도</b>로 연결해드려요.</div></div>
+      <button class="btn-primary" style="margin-top:10px" onclick="findNearby()">📍 현재 위치로 주변 음식점 찾기</button>
+    </div>
+    <div class="card">
+      <div class="sec-title">🔔 최근 소식</div>
+      ${S.feed.length ? S.feed.map(f=>{
+        const m = member(f.who)||{emoji:"👤",nickname:"가족"};
+        return `<div class="feed-item"><span class="who">${m.emoji}</span><span class="txt"><b>${esc(m.nickname)}</b>님이 ${esc(f.txt)}</span><span class="time">${relTime(f.ts)}</span></div>`;
+      }).join("") : `<div class="empty">아직 소식이 없어요</div>`}
+    </div>
+    <div style="text-align:center;margin:4px 0 12px">
+      <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="openHelp()">📖 앱 사용법 보기</button>
+    </div>`;
+
+  const cv=$("#cvV");
+  if(cv) cv.oninput=e=>{ const v=+e.target.value||0; $("#cvK").value = v?Math.round(v*EX_RATE).toLocaleString("ko-KR")+"원":""; };
+  document.querySelectorAll(".diary-input").forEach(t=>t.onchange=ev=>{
+    S.diary[ev.target.dataset.day]=ev.target.value;
+    syncDiary(); toast("추억을 저장했어요 ✨");
+  });
+  if(!over) loadWeather();
+  loadFx();
+}
+
+/* ---------- 여행 정보 수정 ---------- */
+function openTripSettings(){
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>✈️ 여행 정보 수정<button class="x" onclick="closeModal()">✕</button></h2>
+      <label class="f-label">여행 이름</label>
+      <input class="f-input" id="tsTitle" maxlength="20" value="${esc(S.trip.title||"")}" placeholder="푸꾸옥 꼬우!">
+      <div class="f-row">
+        <div><label class="f-label">시작일 (출발)</label><input class="f-input" type="date" id="tsStart" value="${S.trip.startDate}"></div>
+        <div><label class="f-label">종료일 (귀국)</label><input class="f-input" type="date" id="tsEnd" value="${S.trip.endDate}"></div>
+      </div>
+      <div class="imp-hint">📌 기간을 줄이면 범위를 벗어난 일정은 지워지지 않고 <b>마지막 날로 이동</b>해요. 날짜를 바꾸면 D-Day·날씨·DAY 탭이 모두 자동으로 맞춰집니다.</div>
+      <button class="btn-primary" onclick="saveTripSettings()">저장하기 ✈️</button>
+      <div id="tsMsg"></div>
+    </div>
+  </div>`;
+}
+function saveTripSettings(){
+  const t=$("#tsTitle").value.trim()||"푸꾸옥 꼬우!";
+  const s=$("#tsStart").value, e=$("#tsEnd").value;
+  const msg=$("#tsMsg");
+  if(!s||!e){ msg.innerHTML=`<div class="imp-msg">⚠️ 시작일과 종료일을 모두 골라주세요</div>`; return; }
+  if(e<s){ msg.innerHTML=`<div class="imp-msg">⚠️ 종료일이 시작일보다 빨라요</div>`; return; }
+  const days=Math.round((new Date(e)-new Date(s))/86400e3)+1;
+  if(days>30){ msg.innerHTML=`<div class="imp-msg">⚠️ 여행 기간은 최대 30일까지 가능해요</div>`; return; }
+  S.trip.title=t; S.trip.startDate=s; S.trip.endDate=e;
+  const moved=[];
+  S.items.forEach(it=>{ if(it.dayIndex>=days){ it.dayIndex=days-1; moved.push(it); } });
+  curDay=Math.min(curDay, days-1);
+  if(mapDay>=days) mapDay=days-1;
+  save();
+  if(FB.on){
+    roomRef().update({title:t, startDate:s, endDate:e}).catch(fbErr);
+    if(moved.length) syncItems(...moved);
+  }
+  addFeed("여행 정보를 수정했어요 🛠");
+  closeModal(); renderAll();
+  toast(moved.length?`저장 완료! 범위 밖 일정 ${moved.length}개는 마지막 날로 옮겼어요`:"여행 정보를 저장했어요 ✈️");
+}
+
+/* ---------- 내장 사용설명서 ---------- */
+function openHelp(){
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>📖 푸꾸옥 꼬우 사용법<button class="x" onclick="closeModal()">✕</button></h2>
+      <div class="imp-hint" style="margin-top:0">
+      <b>🏁 시작하기</b><br>
+      이 파일을 브라우저로 열고 이름만 쓰면 끝! 폰에선 브라우저 메뉴의 <b>'홈 화면에 추가'</b>를 누르면 앱처럼 쓸 수 있어요. 데이터는 기기에 자동 저장돼요.<br><br>
+      <b>📅 일정 관리</b><br>
+      · ＋ 버튼: 일정 추가 (장소 이름 쓰고 🔍를 누르면 지도 위치 자동)<br>
+      · 📥 가져오기: 구글지도 공유 링크나 "12/24 10시 빈원더스" 같은 메모를 붙여넣으면 일정으로 변환<br>
+      · 카드의 ✏️ 수정 / ▲▼ 순서 변경 / 👍❤️🤔 가족 반응 / 후보 일정은 '확정하기'로 투표 마감<br>
+      · 여행 이름·날짜 변경: 상단 주황 헤더의 <b>날짜 부분(✏️)</b>을 누르세요<br><br>
+      <b>🗺️ 지도</b><br>
+      날짜별 동선과 이동시간이 자동 표시돼요. ▶를 누르면 하루 동선이 시간순으로 재생! 지도에 없는 일정은 장소 이름·좌표를 넣으면 나타나요.<br><br>
+      <b>👨‍👩‍👧 가족과 실시간 공유</b><br>
+      ① 가족 중 한 명이 [가족 탭 → ⚙️ 5분 설정]으로 Firebase(무료·구글)를 만들고 🔒 보안 규칙까지 게시<br>
+      ② [🏠 새 여행방 만들기] → 6자리 코드 생성<br>
+      ③ 가족들은 같은 파일을 받아 열고 → 가족 탭에서 같은 설정(config)을 붙여넣고 → [🔑 초대 코드로 참여]<br>
+      ④ 이후 누가 고쳐도 모두의 화면에 실시간 반영! (코드·설정값은 가족끼리만 공유)<br><br>
+      <b>🎒 그 외</b><br>
+      · 준비물 탭: 공용/개인별 체크리스트<br>
+      · 홈: 오늘 환율(자동 갱신), 여행 날씨(출발 2주 전부터 실제 예보), 📍 주변 맛집 찾기<br>
+      · 여행이 끝나면 홈이 자동으로 <b>추억 앨범</b>으로 바뀌어요<br><br>
+      <b>🔧 문제 해결</b><br>
+      · 지도가 안 보여요 → 인터넷 연결 확인 (오프라인엔 약식 지도로 자동 전환)<br>
+      · 위치 찾기가 안 돼요 → 위치 권한 허용, 안 되면 '구글지도에서 바로 찾기' 버튼 이용<br>
+      · 처음부터 다시 → 가족 탭 맨 아래 '데모 데이터로 초기화'<br>
+      · 실시간 공유가 끊겼어요 → 가족 탭에서 연결 상태 확인, 다시 [코드로 참여]
+      </div>
+      <button class="btn-primary" onclick="closeModal()">알겠어요! 🥥</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- 실시간 환율 (open.er-api.com, API키 불필요) ---------- */
+async function loadFx(){
+  const box=$("#fxBox"); if(!box) return;
+  const draw=(usd, vnd10k, when, live)=>{
+    box.innerHTML=`
+      <div class="fx-row"><span>🇺🇸 1달러 (USD)</span><span class="v">${Math.round(usd).toLocaleString("ko-KR")}원</span></div>
+      <div class="fx-row"><span>🇻🇳 1만 동 (VND)</span><span class="v">${Math.round(vnd10k).toLocaleString("ko-KR")}원</span></div>
+      <div class="map-note" style="text-align:left;margin-top:6px">${live
+        ? esc(when)+" 기준 실시간 환율 — 앱의 동↔원 계산에도 자동 적용돼요"
+        : "환율을 불러오지 못해 기본값(1만₫≈"+Math.round(10000*EX_RATE)+"원)으로 표시 중이에요"}</div>`;
+  };
+  try{
+    let fx=null;
+    try{ fx=JSON.parse(localStorage.getItem("pqgo_fx")||"null"); }catch(e){}
+    if(!fx || !fx.krw || !fx.vnd || Date.now()-fx.ts > 6*3600e3){
+      const r=await fetch("https://open.er-api.com/v6/latest/USD");
+      const j=await r.json();
+      if(!j.rates || !j.rates.KRW || !j.rates.VND) throw 0;
+      fx={ts:Date.now(), krw:j.rates.KRW, vnd:j.rates.VND};
+      localStorage.setItem("pqgo_fx", JSON.stringify(fx));
+    }
+    const newRate=fx.krw/fx.vnd;
+    const changed=Math.abs(newRate-EX_RATE)/EX_RATE>0.005;
+    EX_RATE=newRate;
+    draw(fx.krw, 10000*newRate,
+      new Date(fx.ts).toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"})+" "+new Date(fx.ts).getHours()+"시", true);
+    if(changed && !loadFx._re){ loadFx._re=true; renderHome(); }
+  }catch(e){
+    draw(1350, 10000*EX_RATE, "", false);
+  }
+}
+
+/* ---------- 내 주변 음식점 (위치 동의 → OSM 검색 → 구글지도 연결) ---------- */
+let myLoc=null;
+function nearFallback(msg){
+  return `<div class="imp-msg">⚠️ ${esc(msg)}</div>
+    <a class="btn-primary" style="display:block;text-align:center;text-decoration:none;margin-top:8px" target="_blank" rel="noopener"
+      href="https://www.google.com/maps/search/${encodeURIComponent("근처 음식점")}">🗺️ 구글지도에서 바로 찾기</a>
+    <div class="map-note">구글지도가 직접 내 위치 주변 음식점을 보여줘요</div>`;
+}
+function findNearby(){
+  const box=$("#nearBox"); if(!box) return;
+  if(!navigator.geolocation){ box.innerHTML=nearFallback("이 브라우저는 위치 기능을 지원하지 않아요"); return; }
+  box.innerHTML=`<div class="imp-msg"><span class="spin">🥥</span> 내 위치 확인 중… (위치 사용을 허용해주세요)</div>`;
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    myLoc={lat:pos.coords.latitude, lng:pos.coords.longitude};
+    box.innerHTML=`<div class="imp-msg"><span class="spin">🥥</span> 주변 음식점을 찾는 중…</div>`;
+    try{
+      const q=`[out:json][timeout:12];(node["amenity"~"restaurant|fast_food|food_court"]["name"](around:1500,${myLoc.lat},${myLoc.lng}););out 40;`;
+      const r=await fetch("https://overpass-api.de/api/interpreter",{
+        method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body:"data="+encodeURIComponent(q)});
+      const j=await r.json();
+      const list=(j.elements||[])
+        .filter(e=>e.tags&&e.tags.name)
+        .map(e=>({name:e.tags.name, cuisine:(e.tags.cuisine||"").split(";")[0].replace(/_/g," "),
+          lat:e.lat, lng:e.lon, km:havKm(myLoc,{lat:e.lat,lng:e.lon})}))
+        .sort((a,b)=>a.km-b.km).slice(0,10);
+      if(!list.length){ box.innerHTML=nearFallback("주변 1.5km 안에서 등록된 음식점을 찾지 못했어요"); return; }
+      box.innerHTML=list.map(x=>`
+        <a class="res-item" style="text-decoration:none;color:inherit" target="_blank" rel="noopener"
+          href="https://www.google.com/maps/search/${encodeURIComponent(x.name)}/@${x.lat},${x.lng},18z">
+          <span class="pin">🍜</span>
+          <div><div class="nm2">${esc(x.name)}</div>
+          <div class="ad">${x.km<1?Math.round(x.km*1000)+"m":x.km.toFixed(1)+"km"}${x.cuisine?" · "+esc(x.cuisine):""}</div></div>
+          <span class="go">구글지도 ›</span>
+        </a>`).join("")
+        +`<div class="map-note" style="margin-top:8px">가게를 누르면 구글지도에서 평점·리뷰·영업시간을 볼 수 있어요</div>`;
+    }catch(e){ box.innerHTML=nearFallback("검색 서버에 연결하지 못했어요"); }
+  }, err=>{
+    box.innerHTML=nearFallback(err&&err.code===1
+      ? "위치 권한이 거부됐어요 — 브라우저 설정에서 허용하거나 아래 버튼을 이용하세요"
+      : "위치를 가져오지 못했어요");
+  }, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
+}
+function miniCard(i){
+  const c = CATS[i.category]||CATS["기타"];
+  return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)">
+    <span style="font-size:1.25rem;width:38px;height:38px;border-radius:10px;background:${c.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0">${c.e}</span>
+    <div><div style="font-weight:800;font-size:.92rem">${esc(i.title)}</div>
+    <div style="font-size:.75rem;color:var(--ink-soft)">${i.startTime||""}${i.endTime?" ~ "+i.endTime:""}${i.place?" · "+esc(i.place.name):""}</div></div>
+  </div>`;
+}
+function goPlan(day){
+  curDay = day;
+  document.querySelector('.tab[data-v="plan"]').click();
+}
+
+/* ---------- 일정 탭 ---------- */
+function renderPlan(){
+  const n = dayCount();
+  let tabs = "";
+  for(let i=0;i<n;i++){
+    const d = dayDate(i);
+    tabs += `<button class="day-tab ${i===curDay?"active":""}" onclick="setDay(${i})">
+      <div class="d">DAY ${i+1}</div><div class="dt">${fmtDate(d,{month:"numeric",day:"numeric",weekday:"short"})}</div></button>`;
+  }
+  const items = dayItems(curDay);
+  $("#view-plan").innerHTML = `
+    <div class="day-tabs">${tabs}</div>
+    <div class="day-head">
+      <span class="t">DAY ${curDay+1} · ${fmtDate(dayDate(curDay))}</span>
+      <button class="sort-btn" style="margin-left:auto;background:#FFF0E9;color:var(--coral-dark)" onclick="openImport()">📥 가져오기</button>
+      <button class="sort-btn" style="margin-left:0" onclick="sortByTime()">🕐 시간순</button>
+    </div>
+    ${items.length ? `<div class="timeline">${items.map((it,idx)=>tItem(it,idx,items.length)).join("")}</div>`
+      : `<div class="placeholder"><span class="big">🌊</span><h3>DAY ${curDay+1}은 아직 비어있어요</h3><p>＋ 버튼으로 직접 추가하거나<br>구글지도 링크·메모를 붙여넣어 가져와보세요!</p>
+        <button class="stage-badge" style="border:none;cursor:pointer" onclick="openImport()">📥 일정 가져오기</button></div>`}
+    <div style="height:70px"></div>`;
+}
+function setDay(i){ curDay = i; renderPlan(); }
+
+function tItem(i, idx, len){
+  const c = CATS[i.category]||CATS["기타"];
+  const creator = member(i.createdBy);
+  const updater = i.updatedBy && i.updatedBy!==i.createdBy ? member(i.updatedBy) : null;
+  const stClass = i.status==="후보"?"cand":(i.status==="완료"?"done":"");
+  const stBadge = i.status==="후보" ? `<span class="badge cand">🗳️ 후보</span>`
+    : i.status==="완료" ? `<span class="badge done">✔ 완료</span>` : `<span class="badge confirm">확정</span>`;
+  const myR = i.reactions?.[meId];
+  const rCount = e => Object.values(i.reactions||{}).filter(x=>x===e).length;
+  return `
+  <div class="titem ${stClass}">
+    <div class="time-col">${i.startTime||"—"}${i.endTime?`<div class="end">~${i.endTime}</div>`:""}</div>
+    <div class="dot"></div>
+    <div class="tcard">
+      <div class="row1">
+        <span class="cat" style="background:${c.bg}">${c.e}</span>
+        <div style="flex:1;min-width:0">
+          <div class="tt">${esc(i.title)}</div>
+          ${i.place?`<div class="place">📍 ${esc(i.place.name)}</div>`:""}
+        </div>
+        <div class="card-actions">
+          <button class="icon-btn" onclick="moveItem('${i.id}',-1)" ${idx===0?"disabled style='opacity:.25'":""}>▲</button>
+          <button class="icon-btn" onclick="moveItem('${i.id}',1)" ${idx===len-1?"disabled style='opacity:.25'":""}>▼</button>
+          <button class="icon-btn" onclick="openForm('${i.id}')">✏️</button>
+        </div>
+      </div>
+      ${i.memo?`<div class="memo">${esc(i.memo)}</div>`:""}
+      <div class="meta">
+        ${stBadge}
+        ${i.cost?`<span class="cost">${fmtVnd(i.cost)} <small>(${fmtKrw(i.cost)})</small></span>`:""}
+        <span class="byline">${creator?creator.emoji+" "+esc(creator.nickname)+" 추가":""}${updater?" · "+updater.emoji+" 수정":""}</span>
+      </div>
+      <div class="reactions">
+        ${["👍","❤️","🤔"].map(e=>`<button class="rbtn ${myR===e?"on":""}" onclick="react('${i.id}','${e}')">${e}${rCount(e)?" "+rCount(e):""}</button>`).join("")}
+        ${i.status==="후보" ? `<button class="rbtn" style="margin-left:auto;color:var(--teal-dark);border-color:var(--teal)" onclick="confirmItem('${i.id}')">확정하기 ✓</button>`:""}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 일정 조작 ---------- */
+function react(id, e){
+  const it = S.items.find(x=>x.id===id); if(!it) return;
+  it.reactions = it.reactions||{};
+  if(it.reactions[meId]===e) delete it.reactions[meId]; else it.reactions[meId]=e;
+  syncItems(it); renderPlan();
+}
+function confirmItem(id){
+  const it = S.items.find(x=>x.id===id); if(!it) return;
+  it.status="확정"; it.updatedBy=meId; it.updatedAt=Date.now();
+  addFeed(`'${it.title}'을(를) 확정했어요 ✓`);
+  syncItems(it); renderAll(); toast("일정이 확정됐어요! 🎉");
+}
+function moveItem(id, dir){
+  const it = S.items.find(x=>x.id===id); if(!it) return;
+  const list = dayItems(it.dayIndex);
+  const idx = list.findIndex(x=>x.id===id);
+  const other = list[idx+dir]; if(!other) return;
+  [it.order, other.order] = [other.order, it.order];
+  syncItems(it, other); renderPlan();
+}
+function sortByTime(){
+  const list = dayItems(curDay);
+  const sorted = [...list].sort((a,b)=>(a.startTime||"99:99").localeCompare(b.startTime||"99:99"));
+  const orders = list.map(x=>x.order).sort((a,b)=>a-b);
+  sorted.forEach((x,i)=>x.order=orders[i]);
+  syncItems(...sorted); renderPlan(); toast("시간순으로 정렬했어요 🕐");
+}
+
+/* ---------- 일정 추가/수정 폼 ---------- */
+let formState = null;
+function openForm(id, preset){
+  const edit = id ? S.items.find(x=>x.id===id) : null;
+  formState = edit ? JSON.parse(JSON.stringify(edit)) : {
+    id:null, dayIndex:(curView==="plan"?curDay:0), startTime:"", endTime:"",
+    title:"", category:"관광", place:null, memo:"", cost:0, status:"확정",
+  };
+  if(preset && !edit) Object.assign(formState, preset);
+  const f = formState;
+  const dayOpts = Array.from({length:dayCount()},(_,i)=>
+    `<option value="${i}" ${i===f.dayIndex?"selected":""}>DAY ${i+1} · ${fmtDate(dayDate(i),{month:"numeric",day:"numeric",weekday:"short"})}</option>`).join("");
+  $("#modalRoot").innerHTML = `
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>${edit?"✏️ 일정 수정":"🌴 새 일정 추가"}<button class="x" onclick="closeModal()">✕</button></h2>
+      <label class="f-label">무엇을 하나요? *</label>
+      <input class="f-input" id="fTitle" placeholder="예: 사오비치에서 물놀이" value="${esc(f.title)}" maxlength="40">
+      <label class="f-label">카테고리</label>
+      <div class="cat-grid" id="fCats">
+        ${Object.entries(CATS).map(([k,v])=>`<button class="cat-opt ${k===f.category?"sel":""}" data-c="${k}"><span class="e">${v.e}</span><span class="n">${k}</span></button>`).join("")}
+      </div>
+      <label class="f-label">날짜</label>
+      <select class="f-input" id="fDay">${dayOpts}</select>
+      <div class="f-row">
+        <div><label class="f-label">시작 시간</label><input class="f-input" type="time" id="fStart" value="${f.startTime}"></div>
+        <div><label class="f-label">종료 시간</label><input class="f-input" type="time" id="fEnd" value="${f.endTime}"></div>
+      </div>
+      <label class="f-label">장소 <span style="font-weight:600">(선택 · 이름 쓰고 🔍를 누르면 지도 위치를 찾아줘요)</span></label>
+      <div class="searchrow">
+        <input class="f-input" id="fPlace" placeholder="예: Sao Beach" value="${esc(f.place?.name||"")}">
+        <button class="btn-mini" id="fPlaceBtn" onclick="searchPlaceInForm()">🔍 검색</button>
+      </div>
+      <div id="fPlaceRes"></div>
+      <label class="f-label">지도 좌표 <span style="font-weight:600">(선택 · 구글지도에서 장소를 꾹 누르면 나오는 숫자)</span></label>
+      <input class="f-input" id="fCoord" placeholder="예: 10.2158, 103.9584" value="${f.place&&f.place.lat!=null?f.place.lat+", "+f.place.lng:""}">
+      <label class="f-label">메모</label>
+      <textarea class="f-input" id="fMemo" placeholder="준비물, 예약번호, 꿀팁 등">${esc(f.memo)}</textarea>
+      <label class="f-label">예상 비용 (VND · 동)</label>
+      <input class="f-input" type="number" id="fCost" inputmode="numeric" placeholder="예: 500000" value="${f.cost||""}">
+      <div class="krw-hint" id="fKrw">${f.cost?("≈ "+fmtKrw(f.cost)):""}</div>
+      <label class="f-label">상태</label>
+      <div class="seg" id="fStatus">
+        <button data-s="확정" class="${f.status==="확정"?"sel":""}">확정</button>
+        <button data-s="후보" class="${f.status==="후보"?"sel":""}">🗳️ 후보 (가족 투표)</button>
+        <button data-s="완료" class="${f.status==="완료"?"sel":""}">✔ 완료</button>
+      </div>
+      <button class="btn-primary" onclick="submitForm()">${edit?"수정 저장하기":"일정 추가하기"} 🥥</button>
+      ${edit?`<button class="btn-danger-line" onclick="askDelete('${edit.id}')">🗑 이 일정 삭제</button>`:""}
+    </div>
+  </div>`;
+  $("#fCats").querySelectorAll(".cat-opt").forEach(b=>b.onclick=()=>{
+    formState.category=b.dataset.c;
+    $("#fCats").querySelectorAll(".cat-opt").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  $("#fStatus").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    formState.status=b.dataset.s;
+    $("#fStatus").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  $("#fCost").oninput = e=>{ $("#fKrw").textContent = e.target.value?("≈ "+fmtKrw(+e.target.value)):""; };
+  setTimeout(()=>$("#fTitle").focus(), 250);
+}
+function closeModal(){
+  $("#modalRoot").innerHTML="";
+  if(pendingRender){ pendingRender=false; renderAll(); }
+}
+
+function submitForm(){
+  const title = $("#fTitle").value.trim();
+  if(!title){ $("#fTitle").style.borderColor="var(--danger)"; $("#fTitle").focus(); return; }
+  const f = formState;
+  f.title = title;
+  f.dayIndex = +$("#fDay").value;
+  f.startTime = $("#fStart").value; f.endTime = $("#fEnd").value;
+  const pname = $("#fPlace").value.trim();
+  f.place = pname ? {...(f.place||{}), name:pname} : null;
+  if(f.place){
+    const cm = $("#fCoord").value.match(/(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/);
+    if(cm){ f.place.lat = +cm[1]; f.place.lng = +cm[2]; }
+    else if($("#fCoord").value.trim()===""){ delete f.place.lat; delete f.place.lng; }
+    if(f.place.lat==null && PLACE_COORDS[pname]) Object.assign(f.place, PLACE_COORDS[pname]);
+  }
+  f.memo = $("#fMemo").value.trim();
+  f.cost = +$("#fCost").value || 0;
+  if(f.id){
+    const i = S.items.findIndex(x=>x.id===f.id);
+    f.updatedBy = meId; f.updatedAt = Date.now();
+    const dayChanged = S.items[i].dayIndex !== f.dayIndex;
+    if(dayChanged) f.order = Math.max(0,...S.items.map(x=>x.order))+1;
+    S.items[i] = f;
+    addFeed(`'${f.title}' 일정을 수정했어요`);
+    toast("일정을 수정했어요 ✏️");
+  }else{
+    f.id = "i"+Date.now();
+    f.createdBy = meId; f.updatedAt = Date.now();
+    f.order = Math.max(0,...S.items.map(x=>x.order),0)+1;
+    f.reactions = {};
+    S.items.push(f);
+    addFeed(`DAY ${f.dayIndex+1}에 '${f.title}' 일정을 추가했어요`);
+    toast("일정을 추가했어요! 🌴");
+  }
+  curDay = f.dayIndex;
+  syncItems(f); closeModal(); renderAll();
+  if(curView==="home") goPlan(f.dayIndex);
+}
+
+/* ---------- 삭제 + 되돌리기 ---------- */
+function askDelete(id){
+  const it = S.items.find(x=>x.id===id); if(!it) return;
+  $("#modalRoot").innerHTML = `
+  <div class="modal-bg" style="align-items:center" onclick="if(event.target===this)closeModal()">
+    <div class="confirm-box">
+      <div class="big">🗑️</div>
+      <p>'${esc(it.title)}'<br>일정을 삭제할까요?</p>
+      <div class="btns">
+        <button class="b-gray" onclick="closeModal()">취소</button>
+        <button class="b-red" onclick="doDelete('${id}')">삭제</button>
+      </div>
+    </div>
+  </div>`;
+}
+function doDelete(id){
+  const idx = S.items.findIndex(x=>x.id===id); if(idx<0) return;
+  undoBuf = S.items[idx];
+  S.items.splice(idx,1);
+  addFeed(`'${undoBuf.title}' 일정을 삭제했어요`);
+  syncDeleteItem(id); closeModal(); renderAll();
+  toast("일정을 삭제했어요", ()=>{
+    if(!undoBuf) return;
+    const it = undoBuf; undoBuf = null;
+    S.items.push(it);
+    addFeed(`'${it.title}' 삭제를 되돌렸어요`);
+    syncItems(it); renderAll(); toast("되돌렸어요! 😊");
+  });
+}
+
+/* ================================================================
+   가족 실시간 공유 (4단계) — Firebase Firestore (선택 설정)
+   설정 없이도 혼자 쓰는 모드로 완전히 작동합니다.
+   ================================================================ */
+const FIREBASE_CONFIG = null; // 파일에 직접 넣으려면 여기에 {apiKey:"...", ...} — 가족 탭에서 붙여넣는 게 더 쉬워요
+const FB = {on:false, status:"off", db:null, code:null, unsub:[], err:null};
+let pendingRender = false;
+
+function getFbConfig(){
+  if(FIREBASE_CONFIG) return FIREBASE_CONFIG;
+  try{ const s=localStorage.getItem("pqgo_fbcfg"); if(s) return JSON.parse(s); }catch(e){}
+  return null;
+}
+function parseFbConfig(txt){
+  const cfg={}; const re=/["']?([A-Za-z]\w+)["']?\s*:\s*["']([^"']+)["']/g; let m;
+  while((m=re.exec(txt))) cfg[m[1]]=m[2];
+  return (cfg.apiKey && cfg.projectId) ? cfg : null;
+}
+function loadFb(){
+  if(window.firebase && firebase.firestore) return Promise.resolve(true);
+  if(loadFb._p) return loadFb._p;
+  const urls=[
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js",
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js",
+    "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"];
+  loadFb._p=(async()=>{
+    for(const u of urls){
+      const ok=await new Promise(res=>{
+        const s=document.createElement("script"); s.src=u;
+        const to=setTimeout(()=>res(false),9000);
+        s.onload=()=>{clearTimeout(to);res(true)}; s.onerror=()=>{clearTimeout(to);res(false)};
+        document.head.appendChild(s);
+      });
+      if(!ok) return false;
+    }
+    return true;
+  })();
+  return loadFb._p;
+}
+function safeRenderAll(){
+  const ae=document.activeElement;
+  const typing = ae && (ae.id==="pkText" || (ae.classList&&ae.classList.contains("diary-input")));
+  if($("#modalRoot").innerHTML.trim() || typing){ pendingRender=true; return; }
+  renderAll();
+}
+document.addEventListener("focusout", ()=>setTimeout(()=>{
+  if(pendingRender && !$("#modalRoot").innerHTML.trim()){ pendingRender=false; renderAll(); }
+},120));
+async function fbConnect(code, create){
+  const cfg=getFbConfig();
+  if(!cfg){ toast("먼저 Firebase 설정을 붙여넣어주세요 ⚙️"); return false; }
+  FB.status="connecting"; FB.err=null;
+  if(curView==="family") renderFamily();
+  const ok=await loadFb();
+  if(!ok){
+    FB.status="error"; FB.err="Firebase 스크립트를 불러오지 못했어요 — 인터넷 연결을 확인해주세요";
+    if(curView==="family") renderFamily(); return false;
+  }
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(cfg);
+    try{ await firebase.auth().signInAnonymously(); }catch(e){ /* 익명 로그인 미설정이면 테스트 모드 규칙으로 진행 */ }
+    FB.db=firebase.firestore();
+    const ref=FB.db.collection("trips").doc(code);
+    if(create){
+      await ref.set({ title:S.trip.title, startDate:S.trip.startDate, endDate:S.trip.endDate,
+        members:S.trip.members, createdAt:Date.now() });
+      const batch=FB.db.batch();
+      S.items.forEach(it=>batch.set(ref.collection("items").doc(it.id), JSON.parse(JSON.stringify(it))));
+      S.pack.forEach(p=>batch.set(ref.collection("pack").doc(p.id), JSON.parse(JSON.stringify(p))));
+      batch.set(ref.collection("meta").doc("diary"), JSON.parse(JSON.stringify(S.diary||{})));
+      await batch.commit();
+    }else{
+      const snap=await ref.get();
+      if(!snap.exists){
+        FB.status="error"; FB.err=`'${code}' 코드의 여행방을 찾을 수 없어요 — 코드를 다시 확인해주세요`;
+        if(curView==="family") renderFamily(); return false;
+      }
+    }
+    FB.code=code; FB.on=true; FB.status="on";
+    localStorage.setItem("pqgo_room", code);
+    attachFb(ref);
+    if(curView==="family") renderFamily();
+    return true;
+  }catch(e){
+    FB.status="error"; FB.on=false;
+    FB.err = (e&&e.code==="permission-denied")
+      ? "권한이 없어요 — Firestore를 '테스트 모드'로 만들었는지 확인해주세요"
+      : "연결 실패: "+((e&&e.message)||e);
+    if(curView==="family") renderFamily();
+    return false;
+  }
+}
+function attachFb(ref){
+  FB.unsub.forEach(u=>{try{u()}catch(e){}}); FB.unsub=[];
+  FB.unsub.push(ref.onSnapshot(d=>{
+    if(!d.exists) return;
+    const t=d.data();
+    S.trip={...S.trip, title:t.title||S.trip.title, startDate:t.startDate||S.trip.startDate,
+      endDate:t.endDate||S.trip.endDate, members:(t.members&&t.members.length)?t.members:S.trip.members};
+    save(); safeRenderAll();
+  }, fbErr));
+  FB.unsub.push(ref.collection("items").onSnapshot(q=>{
+    S.items=q.docs.map(d=>d.data()); save(); safeRenderAll();
+  }, fbErr));
+  FB.unsub.push(ref.collection("feed").orderBy("ts","desc").limit(10).onSnapshot(q=>{
+    S.feed=q.docs.map(d=>d.data()); save(); safeRenderAll();
+  }, fbErr));
+  FB.unsub.push(ref.collection("pack").onSnapshot(q=>{
+    S.pack=q.docs.map(d=>d.data()); save(); safeRenderAll();
+  }, fbErr));
+  FB.unsub.push(ref.collection("meta").doc("diary").onSnapshot(d=>{
+    if(d.exists){ S.diary=d.data()||{}; save(); safeRenderAll(); }
+  }, fbErr));
+}
+function fbErr(e){
+  FB.status="error";
+  FB.err = (e&&e.code==="permission-denied") ? "권한 오류 — Firestore 규칙을 확인해주세요" : ((e&&e.message)||"연결 오류");
+  if(curView==="family") renderFamily();
+}
+function leaveRoom(){
+  FB.unsub.forEach(u=>{try{u()}catch(e){}}); FB.unsub=[];
+  FB.on=false; FB.status="off"; FB.code=null; FB.err=null;
+  localStorage.removeItem("pqgo_room");
+  closeModal(); renderAll(); toast("가족방에서 나왔어요 — 이제 이 기기에만 저장돼요 📴");
+}
+function roomRef(){ return FB.db.collection("trips").doc(FB.code); }
+/* 저장 + (연결 시) 클라우드 반영 */
+function syncItems(...its){
+  save();
+  if(FB.on) its.forEach(it=>roomRef().collection("items").doc(it.id)
+    .set(JSON.parse(JSON.stringify(it))).catch(fbErr));
+}
+function syncDeleteItem(id){
+  save();
+  if(FB.on) roomRef().collection("items").doc(id).delete().catch(fbErr);
+}
+function syncPack(...ps){
+  save();
+  if(FB.on) ps.forEach(p=>roomRef().collection("pack").doc(p.id)
+    .set(JSON.parse(JSON.stringify(p))).catch(fbErr));
+}
+function syncDeletePack(id){
+  save();
+  if(FB.on) roomRef().collection("pack").doc(id).delete().catch(fbErr);
+}
+function syncDiary(){
+  save();
+  if(FB.on) roomRef().collection("meta").doc("diary")
+    .set(JSON.parse(JSON.stringify(S.diary))).catch(fbErr);
+}
+function genCode(){
+  const A="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; let c="";
+  for(let i=0;i<6;i++) c+=A[Math.floor(Math.random()*A.length)];
+  return c;
+}
+async function createRoom(){
+  const code=genCode();
+  const ok=await fbConnect(code, true);
+  if(ok){ addFeed("가족 여행방을 만들었어요 🏠"); renderFamily(); toast("여행방 완성! 코드를 가족에게 알려주세요 🎉"); }
+}
+function joinRoomModal(){
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>🔑 초대 코드로 참여<button class="x" onclick="closeModal()">✕</button></h2>
+      <label class="f-label">가족에게 받은 6자리 코드를 입력하세요</label>
+      <input class="f-input" id="joinCode" placeholder="예: KQ7PWM" maxlength="6"
+        style="text-align:center;font-size:1.4rem;font-weight:800;letter-spacing:.3em;text-transform:uppercase">
+      <div class="imp-hint">⚠️ 참여하면 이 기기의 일정 대신 <b>가족방의 일정</b>을 함께 보게 돼요.</div>
+      <button class="btn-primary" onclick="doJoin()">참여하기 🥥</button>
+      <div id="joinMsg"></div>
+    </div>
+  </div>`;
+  setTimeout(()=>$("#joinCode").focus(),250);
+}
+async function doJoin(){
+  const code=$("#joinCode").value.trim().toUpperCase();
+  if(code.length<6){ $("#joinCode").style.borderColor="var(--danger)"; return; }
+  $("#joinMsg").innerHTML=`<div class="imp-msg"><span class="spin">🥥</span> 여행방을 찾는 중…</div>`;
+  const ok=await fbConnect(code, false);
+  if(ok){ memberJoinModal(); }
+  else{ $("#joinMsg").innerHTML=`<div class="imp-msg">⚠️ ${esc(FB.err||"연결에 실패했어요")}</div>`; }
+}
+function memberJoinModal(){
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg">
+    <div class="modal">
+      <h2>👋 가족방에 참여했어요!</h2>
+      <label class="f-label">누구신가요? 기존 멤버를 고르거나 새로 만들어요</label>
+      ${S.trip.members.map(m=>`
+        <button class="res-item" onclick="joinAsMember('${m.id}')">
+          <span class="pin">${m.emoji}</span><div class="nm2">${esc(m.nickname)}</div>
+          <span class="go">나예요 ›</span></button>`).join("")}
+      <label class="f-label">또는 새 멤버로 참여</label>
+      <div class="searchrow">
+        <input class="f-input" id="nmName" placeholder="닉네임 (예: 이모)" maxlength="8">
+        <select class="f-input" id="nmEmoji" style="flex:0 0 86px">
+          ${"🙋,🧔,👩,👧,👦,👴,👵,🧑".split(",").map(e=>`<option>${e}</option>`).join("")}
+        </select>
+      </div>
+      <button class="btn-primary" onclick="joinAsNew()">이 이름으로 참여 🥥</button>
+    </div>
+  </div>`;
+}
+function joinAsMember(id){
+  meId=id; localStorage.setItem("pqgo_me", id);
+  closeModal(); renderAll();
+  const m=member(id); toast(`${m.emoji} ${m.nickname}님으로 참여했어요!`);
+}
+async function joinAsNew(){
+  const name=$("#nmName").value.trim();
+  if(!name){ $("#nmName").style.borderColor="var(--danger)"; $("#nmName").focus(); return; }
+  const m={id:"u"+Date.now(), nickname:name, emoji:$("#nmEmoji").value,
+    color:DAY_COLORS[S.trip.members.length%7]};
+  S.trip.members.push(m);
+  meId=m.id; localStorage.setItem("pqgo_me", meId);
+  if(FB.on){
+    try{ await roomRef().update({members:firebase.firestore.FieldValue.arrayUnion(m)}); }catch(e){ fbErr(e); }
+  }
+  save(); closeModal(); renderAll();
+  addFeed("가족방에 참여했어요 👋");
+  toast(`${m.emoji} ${name}님, 환영해요!`);
+}
+const SECURE_RULES = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 여행방: 6자리 코드를 '정확히' 아는 사람만 접근 가능
+    match /trips/{trip} {
+      allow get: if true;        // 코드로 직접 열기만 허용
+      allow list: if false;      // 방 목록 훑어보기 차단
+      allow create, update: if true;
+      allow delete: if false;    // 방 통째 삭제 차단
+      // 방 안의 일정·준비물·소식·추억
+      match /items/{doc}  { allow read, write: if true; }
+      match /pack/{doc}   { allow read, write: if true; }
+      match /feed/{doc}   { allow read, write: if true; }
+      match /meta/{doc}   { allow read, write: if true; }
+    }
+  }
+}`;
+function fbSetupModal(){
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>⚙️ 실시간 공유 설정 (약 5분)<button class="x" onclick="closeModal()">✕</button></h2>
+      <div class="imp-hint" style="margin-top:0">
+      무료 Firebase(구글)로 가족 모두의 화면을 실시간으로 맞춰줘요. <b>가족 중 한 명만</b> 하면 돼요!<br><br>
+      ① <b>console.firebase.google.com</b> 접속 → 프로젝트 만들기 (이름 아무거나, 애널리틱스 끄기)<br>
+      ② 왼쪽 <b>빌드 → Firestore Database → 데이터베이스 만들기</b> → 위치는 <b>asia-southeast1</b> → <b>테스트 모드</b>로 시작<br>
+      ③ 프로젝트 개요 옆 ⚙️ → 프로젝트 설정 → 아래 <b>&lt;/&gt; (웹 앱)</b> 추가 → 앱 등록<br>
+      ④ 화면에 나오는 <b>firebaseConfig 코드를 전부 복사</b>해서 아래에 붙여넣기<br>
+      ⑤ <b>🔒 보안 규칙 적용(꼭!)</b> — Firestore Database → <b>규칙</b> 탭 → 기존 내용을 지우고 아래 규칙을 붙여넣고 <b>게시</b>
+      </div>
+      <div class="rules-box">${SECURE_RULES}</div>
+      <button class="btn-mini" style="width:100%;padding:11px 0;margin-top:8px" onclick="copyRules()">📋 보안 규칙 복사하기</button>
+      <div class="imp-hint">🔒 이 규칙을 적용하면: 초대 코드를 모르는 사람은 방을 <b>찾을 수도, 열 수도</b> 없어요 (방 목록 조회 차단). 방을 통째로 지우는 것도 막고, 테스트 모드의 <b>30일 만료 문제도 사라져요</b>. 초대 코드는 가족끼리만 공유하고, 여권번호 같은 민감정보는 메모에 적지 마세요!</div>
+      <label class="f-label">firebaseConfig 붙여넣기</label>
+      <textarea class="f-input" id="fbCfgText" style="min-height:110px" placeholder='const firebaseConfig = {&#10;  apiKey: "AIza...",&#10;  projectId: "...",&#10;  ...&#10;};'></textarea>
+      <button class="btn-primary" onclick="saveFbCfg()">설정 저장하기 ⚙️</button>
+      <div id="fbCfgMsg"></div>
+    </div>
+  </div>`;
+}
+function copyRules(){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(SECURE_RULES)
+      .then(()=>toast("보안 규칙을 복사했어요 — Firestore 규칙 탭에 붙여넣으세요 📋"))
+      .catch(()=>toast("복사 실패 — 위 코드를 직접 드래그해서 복사해주세요"));
+  }else toast("위 코드를 직접 드래그해서 복사해주세요");
+}
+function saveFbCfg(){
+  const cfg=parseFbConfig($("#fbCfgText").value);
+  if(!cfg){ $("#fbCfgMsg").innerHTML=`<div class="imp-msg">⚠️ 설정을 인식하지 못했어요 — apiKey와 projectId가 포함된 코드를 통째로 붙여넣어주세요</div>`; return; }
+  localStorage.setItem("pqgo_fbcfg", JSON.stringify(cfg));
+  closeModal(); renderFamily();
+  toast("설정 저장 완료! 이제 여행방을 만들 수 있어요 🎉");
+}
+function copyCode(){
+  const txt=`푸꾸옥 꼬우! 우리 가족 여행방 초대 코드: ${FB.code}\n앱을 열고 [가족 탭 → 초대 코드로 참여]에 입력해줘 🥥`;
+  if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast("초대 메시지를 복사했어요 📋")); }
+  else toast("코드: "+FB.code);
+}
+
+/* ================================================================
+   가져오기 (3단계) — 구글지도 링크 / 장소 검색(Nominatim) / 텍스트 파싱
+   ================================================================ */
+let impMode = "link";
+let impCandidates = [];
+let impDraft = [];
+
+/* 무료 지오코딩 (OpenStreetMap Nominatim, API키 불필요) — 푸꾸옥 주변 우선 */
+async function geocode(q){
+  const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=ko"
+    + "&viewbox=103.50,10.70,104.40,9.70&bounded=0&q=" + encodeURIComponent(q);
+  const r = await fetch(url, {headers:{"Accept":"application/json"}});
+  if(!r.ok) throw new Error("http "+r.status);
+  const arr = await r.json();
+  return arr.map(x=>({
+    name: x.name || String(x.display_name||"").split(",")[0].trim() || q,
+    addr: String(x.display_name||"").split(",").slice(0,3).join(",").trim(),
+    lat:+x.lat, lng:+x.lon,
+  }));
+}
+
+/* 구글지도 공유 텍스트/URL 분석 */
+function parseGmapsShare(txt){
+  const out = {url:null, shortLink:false, name:null, lat:null, lng:null, freeText:null};
+  const um = txt.match(/https?:\/\/\S+/);
+  if(um){
+    out.url = um[0];
+    out.shortLink = /(maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/)/.test(out.url);
+    let dec = out.url;
+    try{ dec = decodeURIComponent(out.url); }catch(e){}
+    const nm = dec.match(/\/maps\/place\/([^\/@?]+)/);
+    if(nm) out.name = nm[1].replace(/\+/g," ").trim();
+    const pin = dec.match(/!3d(-?\d{1,2}\.\d+)[^!]*!4d(-?\d{1,3}\.\d+)/);
+    const at  = dec.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
+    const qm  = dec.match(/[?&]q=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
+    const c = pin||qm||at;
+    if(c){ out.lat=+c[1]; out.lng=+c[2]; }
+  }
+  // URL 앞뒤의 텍스트(카톡 공유 메시지의 장소 이름)
+  const rest = txt.replace(/https?:\/\/\S+/g," ").replace(/\s+/g," ").trim();
+  if(rest) out.freeText = rest.split("\n")[0].slice(0,60);
+  if(!out.name && !out.url && rest) out.name = rest;
+  return out;
+}
+
+/* 자유 텍스트 → 일정 초안 */
+function guessCat(t){
+  if(/조식|점심|저녁|식당|맛집|국수|분짜|반쎄오|먹|밥|디너|런치/.test(t)) return "식사";
+  if(/카페|커피|디저트|빙수/.test(t)) return "카페";
+  if(/호텔|체크인|체크아웃|숙소|리조트/.test(t)) return "숙소";
+  if(/공항|이동|택시|그랩|버스|선착장|출발|도착/.test(t)) return "이동";
+  if(/시장|쇼핑|기념품|마트/.test(t)) return "쇼핑";
+  if(/스노클|다이빙|카약|투어|워터파크|케이블카|스파|마사지/.test(t)) return "액티비티";
+  return "관광";
+}
+function parseFreeText(txt){
+  const out = [];
+  let idx = curDay;
+  const pieces = txt.split(/[\n,·]+/).map(s=>s.trim()).filter(Boolean);
+  for(let piece of pieces){
+    const dm = piece.match(/(\d{1,2})\s*[\/월.]\s*(\d{1,2})\s*일?/);
+    if(dm){
+      const mo=+dm[1], da=+dm[2];
+      for(let i=0;i<dayCount();i++){
+        const d=dayDate(i);
+        if(d.getMonth()+1===mo && d.getDate()===da){ idx=i; break; }
+      }
+      piece = piece.replace(dm[0],"").trim();
+    }
+    let st="";
+    const tm = piece.match(/(오전|오후)?\s*(\d{1,2})\s*(?::(\d{2})|시\s*반|시\s*(?:(\d{1,2})\s*분)?)/);
+    if(tm){
+      let h=+tm[2], mi=+(tm[3]||tm[4]||0);
+      if(/시\s*반/.test(tm[0])) mi=30;
+      if(tm[1]==="오후" && h<12) h+=12;
+      if(tm[1]==="오전" && h===12) h=0;
+      if(h<24){ st=String(h).padStart(2,"0")+":"+String(mi).padStart(2,"0"); }
+      piece = piece.replace(tm[0],"").trim();
+    }
+    const title = piece.replace(/^[-~:.\s]+|[-~:.\s]+$/g,"").trim();
+    if(!title) continue;
+    out.push({dayIndex:idx, startTime:st, title, category:guessCat(title)});
+  }
+  return out;
+}
+
+/* ---------- 가져오기 모달 ---------- */
+function openImport(mode){
+  impMode = mode||"link"; impCandidates=[]; impDraft=[];
+  $("#modalRoot").innerHTML = `
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>📥 일정 가져오기<button class="x" onclick="closeModal()">✕</button></h2>
+      <div class="seg" id="impTabs">
+        <button data-m="link" class="${impMode==="link"?"sel":""}">🔗 구글지도 링크</button>
+        <button data-m="text" class="${impMode==="text"?"sel":""}">📝 텍스트 일정</button>
+      </div>
+      <div id="impBody"></div>
+    </div>
+  </div>`;
+  $("#impTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    impMode=b.dataset.m;
+    $("#impTabs").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));
+    renderImpBody();
+  });
+  renderImpBody();
+}
+function renderImpBody(){
+  if(impMode==="link"){
+    $("#impBody").innerHTML = `
+      <label class="f-label">구글지도 공유 메시지나 주소를 붙여넣으세요</label>
+      <textarea class="f-input" id="impText" style="min-height:88px" placeholder="예)&#10;껌냐 레스토랑&#10;https://maps.app.goo.gl/abc123&#10;&#10;또는 구글지도 주소창의 긴 주소(google.com/maps/place/...)"></textarea>
+      <button class="btn-primary" style="margin-top:12px" onclick="analyzeLink()">🔍 장소 찾기</button>
+      <div id="impResult"></div>
+      <div class="imp-hint">💡 <b>구글지도 앱</b>에서 장소 → <b>공유</b> → 메시지를 통째로 붙여넣으면 돼요.<br>
+      짧은 링크(maps.app.goo.gl)는 함께 온 <b>장소 이름</b>으로 검색해서 찾아드려요.</div>`;
+  }else{
+    $("#impBody").innerHTML = `
+      <label class="f-label">메모해둔 일정을 붙여넣으세요 (날짜·시간 자동 인식)</label>
+      <textarea class="f-input" id="impText" style="min-height:110px" placeholder="예)&#10;12/24 10시 빈원더스, 13시 파크 점심&#10;12/25 오후 4시 사오비치, 18시반 선셋타운 불쇼"></textarea>
+      <button class="btn-primary" style="margin-top:12px" onclick="analyzeText()">✨ 일정으로 바꾸기</button>
+      <div id="impResult"></div>`;
+  }
+}
+async function analyzeLink(){
+  const txt = $("#impText").value.trim();
+  const box = $("#impResult");
+  if(!txt){ box.innerHTML=`<div class="imp-msg">먼저 링크나 장소 이름을 붙여넣어주세요!</div>`; return; }
+  box.innerHTML = `<div class="imp-msg"><span class="spin">🥥</span> 장소를 찾는 중…</div>`;
+  const p = parseGmapsShare(txt);
+  impCandidates = [];
+  if(p.name && p.lat!=null){
+    impCandidates = [{name:p.name, addr:"구글지도 링크에서 바로 추출했어요", lat:p.lat, lng:p.lng}];
+  }else{
+    const q = p.name || p.freeText;
+    if(!q){
+      box.innerHTML = `<div class="imp-msg">⚠️ 짧은 링크만으로는 장소를 알 수 없어요.<br>
+      ① 링크와 함께 <b>장소 이름</b>도 같이 붙여넣거나<br>
+      ② 링크를 한 번 연 뒤 주소창의 <b>긴 주소</b>를 복사해 붙여넣어주세요.</div>`;
+      return;
+    }
+    try{
+      impCandidates = await geocode(q);
+      if(p.lat!=null) impCandidates.unshift({name:q, addr:"링크의 지도 위치", lat:p.lat, lng:p.lng});
+    }catch(e){
+      if(p.lat!=null){ impCandidates=[{name:q, addr:"링크의 지도 위치", lat:p.lat, lng:p.lng}]; }
+      else{ box.innerHTML=`<div class="imp-msg">📡 검색 서버에 연결할 수 없어요. 인터넷 연결을 확인하거나, 일정 추가에서 좌표를 직접 붙여넣어주세요.</div>`; return; }
+    }
+  }
+  if(!impCandidates.length){
+    box.innerHTML = `<div class="imp-msg">'${esc(p.name||p.freeText||"")}' 검색 결과가 없어요 😢 이름을 조금 바꿔서 다시 시도해보세요.</div>`;
+    return;
+  }
+  box.innerHTML = `<label class="f-label">찾은 장소 — 눌러서 일정으로 추가</label>` +
+    impCandidates.map((c,i)=>`
+      <button class="res-item" onclick="pickCandidate(${i})">
+        <span class="pin">📍</span>
+        <div><div class="nm2">${esc(c.name)}</div><div class="ad">${esc(c.addr)}</div></div>
+        <span class="go">추가 ›</span>
+      </button>`).join("");
+}
+function pickCandidate(i){
+  const c = impCandidates[i]; if(!c) return;
+  openForm(null, {
+    title:c.name,
+    place:{name:c.name, lat:c.lat, lng:c.lng},
+    dayIndex:(curView==="plan"?curDay:0),
+  });
+  toast("장소를 찾았어요! 날짜와 시간을 정해주세요 📍");
+}
+function analyzeText(){
+  const txt = $("#impText").value.trim();
+  const box = $("#impResult");
+  if(!txt){ box.innerHTML=`<div class="imp-msg">먼저 일정 메모를 붙여넣어주세요!</div>`; return; }
+  impDraft = parseFreeText(txt);
+  if(!impDraft.length){
+    box.innerHTML=`<div class="imp-msg">일정을 찾지 못했어요 😢 "12/24 10시 빈원더스"처럼 적어보세요.</div>`;
+    return;
+  }
+  box.innerHTML = `<label class="f-label">이렇게 이해했어요 — 확인하고 추가하세요</label>` +
+    impDraft.map((d,i)=>`
+      <label class="prev-item">
+        <input type="checkbox" checked data-i="${i}">
+        <span style="font-size:1.2rem">${(CATS[d.category]||CATS["기타"]).e}</span>
+        <div><div class="pi-t">${esc(d.title)}</div>
+        <div class="pi-s">DAY ${d.dayIndex+1} · ${fmtDate(dayDate(d.dayIndex),{month:"numeric",day:"numeric"})}${d.startTime?" · "+d.startTime:""} · ${d.category}</div></div>
+      </label>`).join("") +
+    `<button class="btn-primary" onclick="addDraftItems()">선택한 일정 추가하기 🥥</button>`;
+}
+function addDraftItems(){
+  const checks = [...document.querySelectorAll('#impResult input[type=checkbox]')];
+  const sel = checks.filter(c=>c.checked).map(c=>impDraft[+c.dataset.i]).filter(Boolean);
+  if(!sel.length){ toast("추가할 일정을 선택해주세요"); return; }
+  let ord = Math.max(0,...S.items.map(x=>x.order),0);
+  const created = [];
+  sel.forEach(d=>{
+    const it = {
+      id:"i"+Date.now()+Math.floor(Math.random()*1e4), dayIndex:d.dayIndex,
+      startTime:d.startTime, endTime:"", title:d.title, category:d.category,
+      place: PLACE_COORDS[d.title]?{name:d.title,...PLACE_COORDS[d.title]}:null,
+      memo:"", cost:0, status:"확정", createdBy:meId, updatedBy:null,
+      updatedAt:Date.now(), order:++ord, reactions:{},
+    };
+    S.items.push(it); created.push(it);
+  });
+  addFeed(`텍스트에서 일정 ${sel.length}개를 가져왔어요 📥`);
+  curDay = sel[0].dayIndex;
+  syncItems(...created); closeModal(); goPlan(curDay);
+  toast(`일정 ${sel.length}개를 추가했어요! 🎉`);
+}
+
+/* ---------- 일정 폼 안의 장소 검색 ---------- */
+async function searchPlaceInForm(){
+  const q = $("#fPlace").value.trim();
+  const box = $("#fPlaceRes");
+  if(!q){ $("#fPlace").focus(); return; }
+  box.innerHTML = `<div class="imp-msg"><span class="spin">🥥</span> 찾는 중…</div>`;
+  try{
+    const rs = await geocode(q + (/(phu quoc|푸꾸옥)/i.test(q)?"":" Phu Quoc"));
+    const rs2 = rs.length ? rs : await geocode(q);
+    if(!rs2.length){ box.innerHTML=`<div class="imp-msg">결과가 없어요 — 영문 이름으로 시도해보세요</div>`; return; }
+    window._formRes = rs2;
+    box.innerHTML = rs2.map((c,i)=>`
+      <button class="res-item" onclick="pickFormPlace(${i})">
+        <span class="pin">📍</span>
+        <div><div class="nm2">${esc(c.name)}</div><div class="ad">${esc(c.addr)}</div></div>
+        <span class="go">선택</span>
+      </button>`).join("");
+  }catch(e){
+    box.innerHTML=`<div class="imp-msg">📡 검색 서버에 연결할 수 없어요 — 좌표를 직접 붙여넣어도 돼요</div>`;
+  }
+}
+function pickFormPlace(i){
+  const c = (window._formRes||[])[i]; if(!c) return;
+  $("#fPlace").value = c.name;
+  $("#fCoord").value = c.lat.toFixed(5)+", "+c.lng.toFixed(5);
+  $("#fPlaceRes").innerHTML = `<div class="imp-msg" style="color:var(--teal-dark)">✅ 지도 위치를 찾았어요!</div>`;
+}
+
+/* ================================================================
+   지도 탭 (2단계) — Leaflet(OSM, 무료·API키 불필요) + 오프라인 SVG 폴백
+   ================================================================ */
+let mapDay = 0;                 // -1 = 전체
+let anim = {t:0, playing:false, raf:null, path:[]};
+let MapCtl = {mode:null, map:null, mover:null, box:null};
+
+const toMin = t => { if(!t) return null; const [h,m]=t.split(":").map(Number); return h*60+m; };
+const minToStr = m => String(Math.floor(m/60)).padStart(2,"0")+":"+String(Math.round(m%60)).padStart(2,"0");
+function havKm(a,b){
+  const R=6371, r=x=>x*Math.PI/180;
+  const dLa=r(b.lat-a.lat), dLo=r(b.lng-a.lng);
+  const h=Math.sin(dLa/2)**2 + Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+const estDriveMin = km => Math.max(3, Math.round(km/28*60 + 4)); // 섬 평균 28km/h + 승하차 4분
+const coordItems = day => dayItems(day).filter(i=>i.place && i.place.lat!=null);
+
+function loadLeaflet(){
+  if(window.L) return Promise.resolve(true);
+  if(loadLeaflet._p) return loadLeaflet._p;
+  loadLeaflet._p = new Promise(res=>{
+    const css=document.createElement("link"); css.rel="stylesheet";
+    css.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+    document.head.appendChild(css);
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    const to=setTimeout(()=>res(false), 4000);
+    s.onload=()=>{clearTimeout(to); res(true)};
+    s.onerror=()=>{clearTimeout(to); res(false)};
+    document.head.appendChild(s);
+  });
+  return loadLeaflet._p;
+}
+
+function renderMap(){
+  stopAnim();
+  const n = dayCount();
+  let chips = `<button class="mchip2 ${mapDay===-1?"active":""}" onclick="setMapDay(-1)">🌍 전체</button>`;
+  for(let i=0;i<n;i++){
+    chips += `<button class="mchip2 ${mapDay===i?"active":""}" onclick="setMapDay(${i})">
+      <span class="dotc" style="background:${DAY_COLORS[i%7]}"></span>DAY ${i+1}</button>`;
+  }
+  const pts = mapDay>=0 ? coordItems(mapDay) : [];
+  const noCoord = (mapDay>=0 ? dayItems(mapDay) : S.items).filter(i=>!(i.place&&i.place.lat!=null));
+
+  /* 구간 리스트 or 전체 요약 */
+  let listHtml = "";
+  if(mapDay>=0){
+    if(pts.length>=2){
+      let rows="";
+      for(let k=0;k<pts.length-1;k++){
+        const a=pts[k], b=pts[k+1];
+        const km=havKm(a.place,b.place), est=estDriveMin(km);
+        const gap=(toMin(b.startTime)!=null&&toMin(a.endTime)!=null)?toMin(b.startTime)-toMin(a.endTime):null;
+        const tight = gap!=null && gap < est*0.75;
+        rows+=`<div class="seg">
+          <span class="n" style="background:${DAY_COLORS[mapDay%7]}">${k+1}</span>
+          <div><div class="tt2">${esc(a.title)} → ${esc(b.title)}</div>
+          <div class="info">${km<0.05?"같은 위치":km.toFixed(1)+"km · 차로 약 "+est+"분"}${gap!=null?" · 여유 "+gap+"분":""}</div></div>
+          ${tight?`<span class="warn">⚠️ 빠듯해요</span>`:""}
+        </div>`;
+      }
+      listHtml=`<div class="card"><div class="sec-title">🚕 구간별 이동</div>${rows}</div>`;
+    }else if(pts.length===1){
+      listHtml=`<div class="card"><div class="empty">이 날은 지도에 표시된 장소가 1곳이에요.<br>장소·좌표를 더 입력하면 동선이 그려져요!</div></div>`;
+    }else{
+      listHtml=`<div class="card"><div class="empty">이 날은 아직 지도에 표시할 장소가 없어요 🗺️</div></div>`;
+    }
+  }else{
+    let rows="";
+    for(let i=0;i<n;i++){
+      const p=coordItems(i);
+      let km=0; for(let k=0;k<p.length-1;k++) km+=havKm(p[k].place,p[k+1].place);
+      rows+=`<button class="day-sum" onclick="setMapDay(${i})">
+        <span class="dotc" style="background:${DAY_COLORS[i%7]};width:11px;height:11px"></span>
+        DAY ${i+1} <span style="font-weight:600;color:var(--ink-soft);font-size:.78rem">${fmtDate(dayDate(i),{month:"numeric",day:"numeric"})}</span>
+        <span class="info">${p.length}곳 · ${km.toFixed(1)}km ›</span>
+      </button>`;
+    }
+    listHtml=`<div class="card"><div class="sec-title">📊 날짜별 동선 요약</div>${rows}</div>`;
+  }
+
+  const playHtml = (mapDay>=0 && pts.length>=2) ? `
+    <div class="play-bar">
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+      <input type="range" id="playSlider" min="0" max="1000" value="0">
+      <span class="play-time" id="playTime">${pts[0].startTime||"--:--"}</span>
+    </div>
+    <div class="play-now" id="playNow">▶를 누르면 하루 동선을 시간순으로 재생해요</div>` : "";
+
+  $("#view-map").innerHTML = `
+    <div class="map-chips">${chips}</div>
+    <div id="mapBox"></div>
+    <div class="map-note" id="mapNote"></div>
+    ${playHtml}
+    ${listHtml}
+    ${noCoord.length?`<div class="card"><div class="sec-title">📍 지도에 없는 일정 <small>${noCoord.length}개</small></div>
+      ${noCoord.slice(0,6).map(i=>`<div class="nocoord"><span>${(CATS[i.category]||CATS["기타"]).e}</span> ${esc(i.title)}
+        <button class="fix" onclick="openForm('${i.id}')">좌표 넣기 ✏️</button></div>`).join("")}
+      <div class="map-note" style="margin-top:8px">✏️에서 장소 이름을 쓰고 🔍 검색하면 자동으로 지도에 표시돼요</div></div>`:""}
+    <div style="height:60px"></div>`;
+
+  MapCtl.box = $("#mapBox");
+  buildMap();
+  if(playHtml){
+    $("#playSlider").oninput = e=>{ stopAnim(false); anim.t=+e.target.value/1000; updateMover(); };
+  }
+}
+function setMapDay(i){ mapDay=i; renderMap(); }
+
+/* ---------- 지도 그리기 ---------- */
+async function buildMap(){
+  const box = MapCtl.box; if(!box) return;
+  const ok = await loadLeaflet();
+  if(box !== $("#mapBox")) return;           // 탭이 바뀐 경우
+  if(ok){ buildLeaflet(box); } else { buildSvg(box); }
+  buildAnimPath();
+}
+function daysToDraw(){
+  const n=dayCount(), arr=[];
+  if(mapDay>=0) arr.push(mapDay); else for(let i=0;i<n;i++) arr.push(i);
+  return arr;
+}
+function buildLeaflet(box){
+  MapCtl.mode="leaflet";
+  if(MapCtl.map){ MapCtl.map.remove(); MapCtl.map=null; }
+  box.innerHTML="";
+  const map = L.map(box,{zoomControl:false, attributionControl:false});
+  L.control.attribution({prefix:false}).addAttribution("© OpenStreetMap").addTo(map);
+  let loaded=false, failed=false;
+  const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18});
+  tiles.on("tileload",()=>loaded=true);
+  tiles.on("tileerror",()=>{
+    if(!loaded && !failed){ failed=true; setTimeout(()=>{ if(!loaded && box===$("#mapBox")) buildSvg(box); },1200); }
+  });
+  tiles.addTo(map);
+  MapCtl.map = map;
+  const bounds=[];
+  daysToDraw().forEach(d=>{
+    const pts=coordItems(d), col=DAY_COLORS[d%7], small=mapDay<0;
+    if(pts.length>1) L.polyline(pts.map(p=>[p.place.lat,p.place.lng]),
+      {color:col, weight:small?3:4.5, opacity:.85, dashArray:small?"6 6":null}).addTo(map);
+    pts.forEach((p,i)=>{
+      bounds.push([p.place.lat,p.place.lng]);
+      L.marker([p.place.lat,p.place.lng],{icon:L.divIcon({
+        html:`<div class="mk ${small?"small":""}" style="background:${col}">${i+1}</div>`,
+        iconSize:[small?19:26,small?19:26], iconAnchor:[small?10:13,small?10:13]})})
+        .addTo(map).bindPopup(`<b>${esc(p.title)}</b><br>${p.startTime||""} ${esc(p.place.name||"")}`);
+    });
+  });
+  if(bounds.length) map.fitBounds(bounds,{padding:[34,34]});
+  else map.setView([10.17,103.97],10);
+  $("#mapNote").textContent = "지도: OpenStreetMap (무료 · API 키 불필요)";
+  MapCtl.mover=null;
+}
+/* ---------- 오프라인 약식 지도 (SVG) ---------- */
+const SVG_BOUNDS = {latTop:10.48, latBot:9.88, lngL:103.80, lngR:104.12, w:100, h:132};
+function proj(lat,lng){
+  const B=SVG_BOUNDS;
+  return { x:(lng-B.lngL)/(B.lngR-B.lngL)*B.w, y:(B.latTop-lat)/(B.latTop-B.latBot)*B.h };
+}
+function buildSvg(box){
+  MapCtl.mode="svg";
+  if(MapCtl.map){ MapCtl.map.remove(); MapCtl.map=null; }
+  let lines="";
+  daysToDraw().forEach(d=>{
+    const pts=coordItems(d);
+    if(pts.length>1){
+      const pathD = pts.map((p,i)=>{const c=proj(p.place.lat,p.place.lng); return (i?"L":"M")+c.x.toFixed(1)+","+c.y.toFixed(1);}).join(" ");
+      lines+=`<path d="${pathD}" fill="none" stroke="${DAY_COLORS[d%7]}" stroke-width="1.1" stroke-dasharray="${mapDay<0?"2 2":"none"}" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`;
+    }
+  });
+  let marks="";
+  daysToDraw().forEach(d=>{
+    const pts=coordItems(d), col=DAY_COLORS[d%7], small=mapDay<0;
+    pts.forEach((p,i)=>{
+      const c=proj(p.place.lat,p.place.lng);
+      marks+=`<div class="mk ${small?"small":""} svg-mk" style="background:${col};left:${c.x/SVG_BOUNDS.w*100}%;top:${c.y/SVG_BOUNDS.h*100}%" title="${esc(p.title)}">${i+1}</div>`;
+    });
+  });
+  box.innerHTML=`
+   <svg viewBox="0 0 100 132" style="position:absolute;inset:0;width:100%;height:100%" preserveAspectRatio="none">
+    <defs><linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#BEE6EE"/><stop offset="1" stop-color="#8FCFDE"/></linearGradient></defs>
+    <rect width="100" height="132" fill="url(#sea)"/>
+    <path d="M30,6 C44,3 58,5 66,13 C72,20 74,32 71,42 C68,52 64,58 62,66 C60,74 64,80 70,86 C77,92 80,95 78,100 C76,104 70,106 66,107 C62,107 59,103 57,97 C55,90 52,83 49,76 C46,68 44,60 43,52 C42,44 38,38 30,33 C22,29 15,27 12,20 C10,14 18,8 30,6 Z"
+      fill="#E8F0CF" stroke="#B9D3A0" stroke-width=".8"/>
+    <ellipse cx="67" cy="115" rx="4.5" ry="5.5" fill="#E8F0CF" stroke="#B9D3A0" stroke-width=".8"/>
+    <text x="26" y="24" font-size="4.6" fill="#7FA86E" font-weight="bold" font-style="italic">Phú Quốc</text>
+    <text x="8" y="122" font-size="3.4" fill="#5FA3B5" font-style="italic">🌊 약식 지도 모드</text>
+    ${lines}
+   </svg>${marks}`;
+  const note=$("#mapNote"); if(note) note.textContent="오프라인 약식 지도예요 — 인터넷이 연결되면 실제 지도로 표시돼요";
+  MapCtl.mover=null;
+}
+
+/* ---------- 동선 재생 애니메이션 ---------- */
+function buildAnimPath(){
+  anim.path=[]; anim.t=0;
+  if(mapDay<0) return;
+  const pts=coordItems(mapDay);
+  if(pts.length<2) return;
+  let lastMin = toMin(pts[0].startTime) ?? 9*60;
+  anim.path = pts.map(p=>{
+    let m = toMin(p.startTime);
+    if(m==null || m<lastMin) m = lastMin+30;
+    lastMin=m;
+    return {lat:p.place.lat, lng:p.place.lng, min:m, title:p.title};
+  });
+}
+function updateMover(){
+  if(anim.path.length<2) return;
+  const segs=anim.path.length-1;
+  const pos=Math.min(anim.t,0.9999)*segs;
+  const i=Math.floor(pos), f=pos-i;
+  const a=anim.path[i], b=anim.path[i+1];
+  const lat=a.lat+(b.lat-a.lat)*f, lng=a.lng+(b.lng-a.lng)*f;
+  const nowMin=a.min+(b.min-a.min)*f;
+  if(MapCtl.mode==="leaflet" && MapCtl.map){
+    if(!MapCtl.mover){
+      MapCtl.mover=L.marker([lat,lng],{zIndexOffset:1000,icon:L.divIcon({html:'<div class="mover"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(MapCtl.map);
+    } else MapCtl.mover.setLatLng([lat,lng]);
+  }else if(MapCtl.mode==="svg" && MapCtl.box){
+    if(!MapCtl.mover){
+      MapCtl.mover=document.createElement("div");
+      MapCtl.mover.className="mover svg-mover";
+      MapCtl.box.appendChild(MapCtl.mover);
+    }
+    const c=proj(lat,lng);
+    MapCtl.mover.style.left=c.x/SVG_BOUNDS.w*100+"%";
+    MapCtl.mover.style.top=c.y/SVG_BOUNDS.h*100+"%";
+  }
+  const tl=$("#playTime"), nw=$("#playNow"), sl=$("#playSlider");
+  if(tl) tl.textContent=minToStr(nowMin);
+  if(sl) sl.value=Math.round(anim.t*1000);
+  if(nw) nw.textContent = f<0.15 ? `📍 ${a.title}` : (f>0.85 ? `📍 ${b.title}` : `🚕 ${a.title} → ${b.title} 이동 중…`);
+}
+function togglePlay(){
+  if(anim.playing){ stopAnim(); return; }
+  if(anim.path.length<2) return;
+  if(anim.t>=0.999) anim.t=0;
+  anim.playing=true;
+  const btn=$("#playBtn"); if(btn) btn.textContent="⏸";
+  const DUR=11000;
+  let last=performance.now();
+  const step=now=>{
+    if(!anim.playing) return;
+    anim.t+=(now-last)/DUR; last=now;
+    if(anim.t>=1){ anim.t=1; updateMover(); stopAnim(); const nw=$("#playNow"); if(nw) nw.textContent="🏁 하루 동선 재생 완료!"; return; }
+    updateMover();
+    anim.raf=requestAnimationFrame(step);
+  };
+  anim.raf=requestAnimationFrame(step);
+}
+function stopAnim(resetBtn=true){
+  anim.playing=false;
+  if(anim.raf) cancelAnimationFrame(anim.raf);
+  if(resetBtn){ const btn=$("#playBtn"); if(btn) btn.textContent="▶"; }
+}
+
+/* ================================================================
+   준비물 체크리스트 (5단계) — 공용 + 개인별
+   ================================================================ */
+function renderPack(){
+  const total=S.pack.length, done=S.pack.filter(p=>p.done).length;
+  const me = member(meId);
+  const common = S.pack.filter(p=>!p.owner);
+  const mine = S.pack.filter(p=>p.owner===meId);
+  const others = S.trip.members.filter(m=>m.id!==meId)
+    .map(m=>({m, list:S.pack.filter(p=>p.owner===m.id)})).filter(x=>x.list.length);
+  const row = p=>{
+    const ow = p.owner ? member(p.owner) : null;
+    return `<div class="pk ${p.done?"done":""}">
+      <input type="checkbox" ${p.done?"checked":""} onchange="togglePack('${p.id}')">
+      <span class="tx">${esc(p.text)}</span>
+      <span class="who2">${ow?ow.emoji+" "+esc(ow.nickname):"👨‍👩‍👧 공용"}</span>
+      <button class="del" onclick="delPack('${p.id}')">✕</button>
+    </div>`;
+  };
+  $("#view-pack").innerHTML = `
+    <div class="card">
+      <div class="sec-title">🎒 챙김 현황 <small>${done} / ${total} 완료</small></div>
+      <div class="prog"><div style="width:${total?Math.round(done/total*100):0}%"></div></div>
+      ${total&&done===total?`<div class="map-note">모두 챙겼어요! 출발 준비 완료 🎉</div>`:""}
+    </div>
+    <div class="card">
+      <div class="sec-title">➕ 준비물 추가</div>
+      <div class="addrow">
+        <input class="f-input" id="pkText" placeholder="예: 선글라스" maxlength="30" onkeydown="if(event.key==='Enter')addPack()">
+        <select class="f-input" id="pkOwner">
+          <option value="">공용</option>
+          ${S.trip.members.map(m=>`<option value="${m.id}" ${m.id===meId?"selected":""}>${m.emoji} ${esc(m.nickname)}</option>`).join("")}
+        </select>
+        <button class="btn-mini" onclick="addPack()">추가</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">👨‍👩‍👧 공용 준비물</div>
+      ${common.length?common.map(row).join(""):`<div class="empty">공용 준비물을 추가해보세요</div>`}
+    </div>
+    <div class="card">
+      <div class="sec-title">${me?me.emoji+" 내":"🙋 내"} 준비물</div>
+      ${mine.length?mine.map(row).join(""):`<div class="empty">위에서 담당을 '${me?esc(me.nickname):"나"}'로 골라 추가해보세요</div>`}
+    </div>
+    ${others.map(x=>`<div class="card"><div class="sec-title">${x.m.emoji} ${esc(x.m.nickname)} 준비물</div>${x.list.map(row).join("")}</div>`).join("")}
+    <div style="height:60px"></div>`;
+}
+function togglePack(id){
+  const p=S.pack.find(x=>x.id===id); if(!p) return;
+  p.done=!p.done; syncPack(p); renderPack();
+}
+function addPack(){
+  const t=$("#pkText").value.trim();
+  if(!t){ $("#pkText").focus(); return; }
+  const p={id:"p"+Date.now(), text:t, owner:$("#pkOwner").value||null, done:false, createdBy:meId};
+  S.pack.push(p);
+  addFeed(`준비물 '${t}'을(를) 추가했어요 🎒`);
+  syncPack(p); renderPack(); toast("준비물을 추가했어요!");
+}
+function delPack(id){
+  const p=S.pack.find(x=>x.id===id); if(!p) return;
+  S.pack=S.pack.filter(x=>x.id!==id);
+  syncDeletePack(id); renderPack(); toast(`'${p.text}' 삭제됨`);
+}
+
+/* ---------- 날씨 (open-meteo, API키 불필요) ---------- */
+function wxEmoji(c){
+  if(c===0) return "☀️"; if(c<=2) return "🌤️"; if(c===3) return "☁️";
+  if(c<=49) return "🌫️"; if(c<=57) return "🌦️"; if(c<=67) return "🌧️";
+  if(c<=82) return "🌦️"; return "⛈️";
+}
+function climateNote(m){
+  const t=["1월 ☀️ 건기 · 24~31℃ — 최고 시즌!","2월 ☀️ 건기 · 25~32℃","3월 ☀️ 건기 끝 · 26~33℃",
+  "4월 🌤️ 무더움 · 27~34℃","5월 🌦️ 우기 시작 · 27~33℃","6월 🌧️ 우기 · 27~32℃",
+  "7월 🌧️ 우기 · 26~31℃","8월 🌧️ 우기 · 26~31℃","9월 ⛈️ 우기 절정 · 25~31℃",
+  "10월 🌦️ 우기 끝물 · 25~31℃","11월 🌤️ 건기 시작 · 25~31℃","12월 ☀️ 건기 · 24~30℃ — 여행 최적!"];
+  return "푸꾸옥 "+t[m-1];
+}
+async function loadWeather(){
+  const box=$("#wxBox"); if(!box) return;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const s=new Date(S.trip.startDate+"T00:00:00"), e=new Date(S.trip.endDate+"T00:00:00");
+  const daysTo=Math.round((s-today)/86400e3);
+  if(daysTo>14){
+    box.innerHTML=`<div class="imp-hint" style="margin-top:0">${climateNote(s.getMonth()+1)}<br>📅 출발 2주 전부터 날짜별 실제 예보가 여기에 떠요 (지금 D-${daysTo})</div>`;
+    return;
+  }
+  try{
+    const f=d=>d.toISOString().slice(0,10);
+    const start=daysTo>0?s:today;
+    const end=new Date(Math.min(+e, +start+15*86400e3));
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=10.22&longitude=103.96&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FBangkok&start_date=${f(start)}&end_date=${f(end)}`);
+    const j=await r.json();
+    if(!j.daily||!j.daily.time.length) throw 0;
+    box.innerHTML=`<div class="wx">${j.daily.time.map((t,i)=>`
+      <div class="wd"><div class="t2">${+t.slice(5,7)}/${+t.slice(8,10)}</div>
+      <div class="e2">${wxEmoji(j.daily.weather_code[i])}</div>
+      <div class="t1">${Math.round(j.daily.temperature_2m_max[i])}°</div>
+      <div class="t2">${Math.round(j.daily.temperature_2m_min[i])}° · 💧${j.daily.precipitation_probability_max[i]??0}%</div></div>`).join("")}</div>`;
+  }catch(err){
+    box.innerHTML=`<div class="empty">날씨를 불러올 수 없어요 — 인터넷 연결을 확인해주세요</div>`;
+  }
+}
+
+/* ---------- 가족 탭 ---------- */
+function renderFamily(){
+  $("#view-family").innerHTML = `
+    <div class="card family-list">
+      <div class="sec-title">👨‍👩‍👧 우리 가족 멤버</div>
+      ${S.trip.members.map(m=>`
+        <div class="fm">
+          <div class="avatar" style="background:${m.color}">${m.emoji}</div>
+          <div><div class="nm">${esc(m.nickname)} ${m.id===meId?'<span style="font-size:.72rem;color:var(--coral-dark)">(나)</span>':""}</div>
+          <div class="role">일정 ${S.items.filter(i=>i.createdBy===m.id).length}개 추가</div></div>
+          ${m.id!==meId?`<button class="swap" onclick="pickMe('${m.id}')">이 사람으로 전환</button>`:""}
+        </div>`).join("")}
+    </div>
+    <div class="card">
+      <div class="sec-title">🔔 최근 변경 내역</div>
+      ${S.feed.length ? S.feed.map(f=>{
+        const m = member(f.who)||{emoji:"👤",nickname:"가족"};
+        return `<div class="feed-item"><span class="who">${m.emoji}</span><span class="txt"><b>${esc(m.nickname)}</b>님이 ${esc(f.txt)}</span><span class="time">${relTime(f.ts)}</span></div>`;
+      }).join("") : `<div class="empty">아직 소식이 없어요</div>`}
+    </div>
+    ${shareCard()}
+    <div class="card">
+      <div class="sec-title">🛠 앱 관리</div>
+      <button class="btn-primary" style="margin-top:0;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openTripSettings()">✈️ 여행 이름·날짜 수정</button>
+      <button class="btn-primary" style="margin-top:10px;background:#fff;color:var(--coral-dark);border:2px solid var(--coral);box-shadow:none" onclick="openHelp()">📖 사용법 보기</button>
+    </div>
+    ${FB.on?"":`<div class="card" style="text-align:center">
+      <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="resetDemo()">🔄 데모 데이터로 초기화</button>
+    </div>`}`;
+}
+function shareCard(){
+  if(FB.on){
+    return `<div class="card" style="text-align:center">
+      <div class="sec-title" style="justify-content:center">🟢 가족 실시간 공유 중</div>
+      <div style="font-size:2rem;font-weight:900;letter-spacing:.28em;color:var(--coral-dark);margin:6px 0 2px">${FB.code}</div>
+      <div style="font-size:.8rem;color:var(--ink-soft);margin-bottom:12px">이 코드를 가족에게 알려주세요 — 누가 고쳐도 모두의 화면에 바로 반영돼요</div>
+      <button class="btn-primary" style="margin-top:0" onclick="copyCode()">📋 초대 메시지 복사</button>
+      <button style="margin-top:12px;color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="leaveRoom()">📴 가족방 나가기 (혼자 모드)</button>
+    </div>`;
+  }
+  if(FB.status==="connecting"){
+    return `<div class="card" style="text-align:center"><div class="imp-msg"><span class="spin">🥥</span> 가족방에 연결하는 중…</div></div>`;
+  }
+  if(getFbConfig()){
+    return `<div class="card">
+      <div class="sec-title">✉️ 가족 실시간 공유</div>
+      ${FB.err?`<div class="imp-msg">⚠️ ${esc(FB.err)}</div>`:""}
+      <button class="btn-primary" style="margin-top:4px" onclick="createRoom()">🏠 새 여행방 만들기</button>
+      <button class="btn-primary" style="margin-top:10px;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="joinRoomModal()">🔑 초대 코드로 참여</button>
+      <div style="text-align:center;margin-top:12px">
+        <button style="color:var(--ink-soft);font-size:.78rem;font-weight:700" onclick="fbSetupModal()">⚙️ Firebase 설정 다시 하기</button>
+      </div>
+    </div>`;
+  }
+  return `<div class="card placeholder" style="padding:24px 16px">
+    <span class="big" style="font-size:2.2rem">✉️</span>
+    <h3 style="font-size:1rem">가족과 실시간으로 함께 쓰기</h3>
+    <p>초대 코드로 가족을 부르면 일정 수정이<br>모두의 화면에 즉시 반영돼요 (무료)</p>
+    <button class="stage-badge" style="border:none;cursor:pointer;font-size:.85rem" onclick="fbSetupModal()">⚙️ 5분 설정 시작하기</button>
+    <p style="margin-top:10px;font-size:.74rem">설정 없이도 지금처럼 혼자 쓸 수 있어요.<br>가족에게 코드를 받았다면 설정 후 '코드로 참여'를 누르세요.</p>
+  </div>`;
+}
+function resetDemo(){
+  $("#modalRoot").innerHTML = `
+  <div class="modal-bg" style="align-items:center" onclick="if(event.target===this)closeModal()">
+    <div class="confirm-box">
+      <div class="big">🔄</div>
+      <p>모든 데이터를 지우고<br>데모 데이터로 되돌릴까요?</p>
+      <div class="btns">
+        <button class="b-gray" onclick="closeModal()">취소</button>
+        <button class="b-red" onclick="S=demoData();save();closeModal();renderAll();toast('데모 데이터로 초기화했어요')">초기화</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 전체 렌더 ---------- */
+function renderAll(){
+  renderHeader();
+  if(curView==="home") renderHome();
+  if(curView==="plan") renderPlan();
+  if(curView==="map") renderMap();
+  if(curView==="pack") renderPack();
+  if(curView==="family") renderFamily();
+}
+renderOnboard();
+renderAll();
+/* 저장된 가족방이 있으면 자동 재연결 */
+(function(){
+  const room = localStorage.getItem("pqgo_room");
+  if(room && getFbConfig()) fbConnect(room, false);
+})();
+</script>
+</body>
+</html>
