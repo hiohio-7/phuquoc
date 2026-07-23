@@ -731,8 +731,14 @@ function renderHome(){
   $("#view-home").innerHTML = `
     <div class="kkou"><div class="face">🥥</div><div class="bubble" id="kkouTip" style="transition:opacity .3s">${tip}</div></div>
     ${memCard}
+    <div class="card">
+      <div class="sec-title">🔔 최근 소식</div>
+      ${S.feed.length ? S.feed.map(f=>{
+        const m = member(f.who)||{emoji:"👤",nickname:"멤버"};
+        return `<div class="feed-item"><span class="who">${m.emoji}</span><span class="txt"><b>${esc(m.nickname)}</b>님이 ${esc(f.txt)}</span><span class="time">${relTime(f.ts)}</span></div>`;
+      }).join("") : `<div class="empty">아직 소식이 없어요</div>`}
+    </div>
     ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
-    ${expCard}
     <div class="card">
       <div class="sec-title">💱 오늘 환율 <small>실시간</small></div>
       <div id="fxBox"><div class="empty">불러오는 중…</div></div>
@@ -747,13 +753,7 @@ function renderHome(){
       <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, 현재 위치에서 가까운 음식점을 찾아 <b>구글지도</b>로 연결해드려요.</div></div>
       <button class="btn-primary" style="margin-top:10px" onclick="findNearby()">📍 현재 위치로 주변 음식점 찾기</button>
     </div>
-    <div class="card">
-      <div class="sec-title">🔔 최근 소식</div>
-      ${S.feed.length ? S.feed.map(f=>{
-        const m = member(f.who)||{emoji:"👤",nickname:"가족"};
-        return `<div class="feed-item"><span class="who">${m.emoji}</span><span class="txt"><b>${esc(m.nickname)}</b>님이 ${esc(f.txt)}</span><span class="time">${relTime(f.ts)}</span></div>`;
-      }).join("") : `<div class="empty">아직 소식이 없어요</div>`}
-    </div>
+    ${expCard}
     <div style="text-align:center;margin:4px 0 12px">
       <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="openHelp()">📖 앱 사용법 보기</button>
     </div>`;
@@ -2196,8 +2196,10 @@ function renderFamily(){
           <div class="avatar" style="background:${m.color}">${m.emoji}</div>
           <div><div class="nm">${esc(m.nickname)} ${m.id===meId?'<span style="font-size:.72rem;color:var(--coral-dark)">(나)</span>':""}</div>
           <div class="role">일정 ${S.items.filter(i=>i.createdBy===m.id).length} · 지출 ${(expOf(m.id)/10000).toFixed(0)}만원 · 댓글 ${cmtOf(m.id)}</div></div>
-          ${m.id!==meId?`<button class="swap" onclick="pickMe('${m.id}')">이 사람으로 전환</button>`:""}
+          ${m.id!==meId?`<button class="swap" onclick="pickMe('${m.id}')">전환</button>
+          <button class="icon-btn" style="flex-shrink:0" onclick="askDelMember('${m.id}')">✕</button>`:""}
         </div>`).join("")}
+      <div class="map-note" style="margin-top:8px">멤버는 각자 앱을 열고 이름을 입력하면 자동으로 추가돼요</div>
     </div>
     <div class="card">
       <div class="sec-title">🔔 새 소식 알림</div>
@@ -2209,7 +2211,8 @@ function renderFamily(){
       <button class="btn-primary" style="margin-top:0;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openTripSettings()">✈️ 여행 이름·날짜 수정</button>
       <button class="btn-primary" style="margin-top:10px;background:#fff;color:var(--coral-dark);border:2px solid var(--coral);box-shadow:none" onclick="openHelp()">📖 사용법 보기</button>
     </div>
-    ${FB.on?"":`<div class="card" style="text-align:center">
+    ${FB.on?"":`<div class="card" style="text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="startFresh()">🧹 새 여행 시작 (전체 비우기)</button>
       <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="resetDemo()">🔄 데모 데이터로 초기화</button>
     </div>`}`;
 }
@@ -2270,6 +2273,48 @@ function shareCard(){
     <button class="stage-badge" style="border:none;cursor:pointer;font-size:.85rem" onclick="fbSetupModal()">⚙️ 5분 설정 시작하기</button>
     <p style="margin-top:10px;font-size:.74rem">설정 없이도 지금처럼 혼자 쓸 수 있어요.<br>가족에게 코드를 받았다면 설정 후 '코드로 참여'를 누르세요.</p>
   </div>`;
+}
+function askDelMember(id){
+  const m=member(id); if(!m) return;
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" style="align-items:center" onclick="if(event.target===this)closeModal()">
+    <div class="confirm-box">
+      <div class="big">${m.emoji}</div>
+      <p>'${esc(m.nickname)}'님을<br>멤버에서 삭제할까요?<br><span style="font-size:.78rem;font-weight:600;color:var(--ink-soft)">그 멤버가 만든 일정·지출은 그대로 남아요</span></p>
+      <div class="btns">
+        <button class="b-gray" onclick="closeModal()">취소</button>
+        <button class="b-red" onclick="delMember('${id}')">삭제</button>
+      </div>
+    </div>
+  </div>`;
+}
+function delMember(id){
+  const m=member(id); if(!m) return;
+  S.trip.members=S.trip.members.filter(x=>x.id!==id);
+  if(FB.on) roomRef().update({members:JSON.parse(JSON.stringify(S.trip.members))}).catch(fbErr);
+  addFeed(`멤버 '${m.nickname}'을(를) 삭제했어요`);
+  save(); closeModal(); renderAll(); toast(`${m.emoji} ${m.nickname}님을 삭제했어요`);
+}
+function startFresh(){
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" style="align-items:center" onclick="if(event.target===this)closeModal()">
+    <div class="confirm-box">
+      <div class="big">🧹</div>
+      <p>모든 일정·지출·준비물·멤버를 비우고<br>새 여행을 시작할까요?<br><span style="font-size:.78rem;font-weight:600;color:var(--ink-soft)">멤버는 나만 남고, 여행 이름·날짜는 유지돼요</span></p>
+      <div class="btns">
+        <button class="b-gray" onclick="closeModal()">취소</button>
+        <button class="b-red" onclick="doStartFresh()">비우기</button>
+      </div>
+    </div>
+  </div>`;
+}
+function doStartFresh(){
+  const me=member(meId)||{id:meId||("u"+Date.now()), nickname:"나", emoji:"🙋", color:DAY_COLORS[0]};
+  S={trip:{title:S.trip.title, startDate:S.trip.startDate, endDate:S.trip.endDate, members:[me]},
+     items:[], pack:[], expenses:[], diary:{}, feed:[]};
+  meId=me.id; localStorage.setItem("pqgo_me", meId);
+  save(); closeModal(); renderAll();
+  toast("새 여행을 시작해요! 일정을 채워보세요 🥥");
 }
 function resetDemo(){
   $("#modalRoot").innerHTML = `
