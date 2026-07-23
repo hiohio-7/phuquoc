@@ -693,9 +693,9 @@ function renderHome(){
   const e = new Date(S.trip.endDate+"T00:00:00");
   const today = new Date(); today.setHours(0,0,0,0);
   const over = today > e;
-  const feedPages = Math.max(1, Math.ceil(S.feed.length/5));
+  const feedPages = Math.max(1, Math.ceil(S.feed.length/3));
   if(feedPage >= feedPages) feedPage = feedPages-1;
-  const feedPageItems = S.feed.slice(feedPage*5, feedPage*5+5);
+  const feedPageItems = S.feed.slice(feedPage*3, feedPage*3+3);
   const tip = over ? "여행 다녀오느라 고생했어요! 아래 <b>추억 앨범</b>에 한 줄씩 남겨봐요 ✍️"
     : KKOU_TIPS[(window._tipIdx==null ? (window._tipIdx=new Date().getDate()%KKOU_TIPS.length) : window._tipIdx)];
 
@@ -755,6 +755,7 @@ function renderHome(){
   $("#view-home").innerHTML = `
     <div class="kkou"><div class="face">🥥</div><div class="bubble" id="kkouTip" style="transition:opacity .3s">${tip}</div></div>
     ${memCard}
+    ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
     <div class="card">
       <div class="sec-title">🔔 최근 소식 <small>${S.feed.length}건</small></div>
       ${feedPageItems.length ? feedPageItems.map(f=>{
@@ -765,16 +766,15 @@ function renderHome(){
         ${Array.from({length:feedPages},(_,p)=>`<button class="mchip2 ${p===feedPage?"active":""}" style="padding:5px 13px" onclick="setFeedPage(${p})">${p+1}</button>`).join("")}
       </div>`:""}
     </div>
-    ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
-    <div class="card">
-      <div class="sec-title">🍜 내 주변 맛집</div>
-      <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, <b>주변 3km</b>의 음식점을 찾아 <b>구글지도</b>(평점·리뷰)로 연결해드려요.</div></div>
-      <button class="btn-primary" style="margin-top:10px" onclick="findNearby()">📍 현재 위치로 주변 음식점 찾기</button>
-    </div>
     <div class="card">
       <div class="sec-title">🏝️ 푸꾸옥 여행 정보</div>
       <div class="imp-hint" style="margin-top:0">명소·해변·유적지·맛집 추천 모음 — 마음에 들면 그 자리에서 바로 일정에 추가할 수 있어요!</div>
       <button class="btn-primary" style="margin-top:10px;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openGuide()">🏝️ 추천 여행 정보 보기</button>
+    </div>
+    <div class="card">
+      <div class="sec-title">🍜 내 주변 맛집</div>
+      <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, <b>주변 3km</b>의 음식점을 찾아 <b>구글지도</b>(평점·리뷰)로 연결해드려요.</div></div>
+      <button class="btn-primary" style="margin-top:10px" onclick="findNearby()">📍 현재 위치로 주변 음식점 찾기</button>
     </div>
     ${expCard}
     <div class="card">
@@ -910,17 +910,24 @@ const GUIDE = [
  {c:"유적·문화",e:"🏛️",name:"푸꾸옥 감옥 (코코넛 감옥)",d:"전쟁 역사를 담은 유적지. 무료 입장",lat:10.0210,lng:104.0269},
  {c:"유적·문화",e:"🛕",name:"호국사 (Ho Quoc Pagoda)",d:"바다를 내려다보는 대형 사원 — 일출 명소",lat:10.0430,lng:104.0520},
  {c:"유적·문화",e:"🗼",name:"즈엉동 등대·어촌마을",d:"섬 중심 마을 산책과 소박한 어촌 풍경",lat:10.2160,lng:103.9570},
- {c:"맛집",e:"🌙",name:"진꺼우 야시장",d:"해산물 구이·열대과일·코코넛 아이스크림의 성지",lat:10.2158,lng:103.9584},
- {c:"맛집",e:"🦀",name:"Crab House",d:"장갑 끼고 먹는 크랩 전문점 — 한국인 인기 최상위"},
- {c:"맛집",e:"🍜",name:"Bun Quay Kien Xay",d:"푸꾸옥 명물 '분꽈이' — 직접 소스 만들어 먹는 국수"},
- {c:"맛집",e:"☕",name:"Chuon Chuon Bistro",d:"언덕 위 전망 카페. 브런치와 뷰 맛집"},
+ {c:"맛집",e:"🌙",name:"진꺼우 야시장",d:"⭐4.3 · 해산물 구이·열대과일·코코넛 아이스크림의 성지",lat:10.2158,lng:103.9584},
+ {c:"맛집",e:"🦀",name:"Crab House",d:"⭐4.5 · 장갑 끼고 먹는 크랩 전문점 — 한국인 인기 최상위",lat:10.2214,lng:103.9628},
+ {c:"맛집",e:"🍜",name:"Bun Quay Kien Xay",d:"⭐4.4 · 푸꾸옥 명물 '분꽈이' — 직접 소스 만들어 먹는 국수",lat:10.2129,lng:103.9601},
+ {c:"맛집",e:"☕",name:"Chuon Chuon Bistro",d:"⭐4.5 · 언덕 위 전망 카페. 브런치와 뷰 맛집",lat:10.1897,lng:103.9738},
+ {c:"맛집",e:"🦐",name:"Ngon Ngon Restaurant",d:"⭐4.4 · 깔끔한 베트남 가정식·해산물, 한국어 메뉴 있음",lat:10.2101,lng:103.9622},
+ {c:"맛집",e:"🍲",name:"Rory's Beach Bar",d:"⭐4.4 · 롱비치 해변 바 — 선셋 보며 맥주 한잔",lat:10.1802,lng:103.9668},
+ {c:"맛집",e:"🥩",name:"The Embassy",d:"⭐4.6 · 스테이크·양식 파인다이닝, 특별한 저녁에",lat:10.2043,lng:103.9640},
+ {c:"맛집",e:"🍤",name:"Xin Chao Restaurant",d:"⭐4.5 · 한국인에게 유명한 해산물집, 갈릭새우 추천",lat:10.1968,lng:103.9631},
+ {c:"맛집",e:"🍜",name:"Pho Xua",d:"⭐4.3 · 아침 쌀국수(포) 해장 맛집",lat:10.2145,lng:103.9595},
+ {c:"맛집",e:"🍧",name:"Buddy Ice Cream",d:"⭐4.4 · 즈엉동 인기 디저트·젤라또 카페",lat:10.2166,lng:103.9576},
+ {c:"카페",e:"🌿",name:"Alanam Coffee",d:"⭐4.6 · 정글 감성 대형 카페, 아이들과 가기 좋음",lat:10.2320,lng:103.9620},
  {c:"쇼핑",e:"🛒",name:"킹콩마트",d:"후추·캐슈넛·커피 기념품 원스톱 쇼핑"},
  {c:"쇼핑",e:"🦪",name:"진주농장 (Ngoc Hien)",d:"푸꾸옥 특산 진주 — 시연 구경만도 재미",lat:10.1310,lng:103.9670},
 ];
 let guideCat = "전체";
 function openGuide(){ renderGuide(); }
 function renderGuide(){
-  const cats = ["전체","명소","해변","유적·문화","맛집","쇼핑"];
+  const cats = ["전체","명소","해변","유적·문화","맛집","카페","쇼핑"];
   const list = GUIDE.filter(g=>guideCat==="전체"||g.c===guideCat);
   window._guideList = list;
   $("#modalRoot").innerHTML = `
