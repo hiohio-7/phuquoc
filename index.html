@@ -169,6 +169,13 @@ textarea.f-input{resize:vertical; min-height:64px}
 .f-row{display:flex; gap:10px}
 .f-row>*{flex:1}
 .cat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+.trans-row{display:flex; gap:8px; margin-top:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none}
+.trans-row::-webkit-scrollbar{display:none}
+.trans-opt{flex:0 0 auto; border:2px solid var(--line); border-radius:12px; padding:7px 12px; text-align:center; background:var(--cream)}
+.trans-opt .e{font-size:1.25rem; display:block}
+.trans-opt .n{font-size:.68rem; font-weight:700; color:var(--ink-soft)}
+.trans-opt.sel{border-color:var(--coral); background:#FFF0E9}
+.trans-opt.sel .n{color:var(--coral-dark)}
 .cat-opt{border:2px solid var(--line); border-radius:12px; padding:8px 2px; text-align:center; background:var(--cream)}
 .cat-opt .e{font-size:1.3rem; display:block}
 .cat-opt .n{font-size:.7rem; font-weight:700; color:var(--ink-soft)}
@@ -208,9 +215,10 @@ textarea.f-input{resize:vertical; min-height:64px}
 .onboard p{font-weight:600; opacity:.94; margin-bottom:26px}
 .ob-input{width:100%; max-width:340px; border:none; border-radius:14px; padding:14px; font-size:1.05rem; font-weight:700; text-align:center; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .ob-input:focus{outline:3px solid rgba(255,255,255,.7)}
-.emoji-grid{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:340px; margin-bottom:20px}
-.eopt{width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,.25); font-size:1.5rem; display:flex; align-items:center; justify-content:center; border:2.5px solid transparent; transition:.12s}
-.eopt.sel{background:#fff; border-color:#fff; transform:scale(1.1)}
+.emoji-grid{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:340px; margin-bottom:18px; max-height:190px; overflow-y:auto; padding:4px}
+.emoji-grid::-webkit-scrollbar{width:5px} .emoji-grid::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15); border-radius:9px}
+.eopt{width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,.28); font-size:1.45rem; display:flex; align-items:center; justify-content:center; border:2.5px solid transparent; transition:.12s; flex-shrink:0}
+.eopt.sel{background:#fff; border-color:#fff; transform:scale(1.12)}
 .ob-btn{background:#fff; color:var(--coral-dark); font-weight:900; font-size:1.05rem; border-radius:999px; padding:14px 44px; box-shadow:0 6px 18px rgba(0,0,0,.2)}
 .ob-btn:active{transform:scale(.96)}
 .fx-row{display:flex; justify-content:space-between; padding:7px 2px; border-bottom:1px dashed var(--line); font-size:.92rem; font-weight:700}
@@ -277,10 +285,18 @@ textarea.f-input{resize:vertical; min-height:64px}
 /* ---------- 날씨 ---------- */
 .wx{display:flex; gap:8px; overflow-x:auto; padding-top:4px; scrollbar-width:none}
 .wx::-webkit-scrollbar{display:none}
-.wx .wd{flex:0 0 72px; background:var(--cream); border-radius:12px; padding:8px 4px; text-align:center}
-.wx .wd .e2{font-size:1.5rem; line-height:1.3}
-.wx .wd .t1{font-size:.8rem; font-weight:800}
+.wx .wd{flex:0 0 78px; background:var(--cream); border-radius:12px; padding:9px 4px; text-align:center; cursor:pointer}
+.wx .wd:active{background:var(--cream2)}
+.wx .wd .e2{font-size:1.6rem; line-height:1.4}
+.wx .wd .t1{font-size:.86rem; font-weight:800}
+.wx .wd .t1 .lo{color:var(--ink-soft); font-weight:600; font-size:.72rem}
 .wx .wd .t2{font-size:.66rem; color:var(--ink-soft); font-weight:600}
+.wx .wd .wdt{font-size:.68rem; color:var(--ink-soft); font-weight:700}
+.wx .wd .wdt small{font-weight:600}
+.wx .wd .wl{font-size:.68rem; font-weight:800; color:var(--ink); margin:1px 0}
+.wx .wd .wr{font-size:.66rem; font-weight:700; color:var(--teal-dark)}
+.wx .wd .wr.hi{color:var(--coral-dark)}
+.wx-head{background:var(--teal-light); color:var(--teal-dark); font-weight:800; font-size:.86rem; border-radius:12px; padding:9px 12px; margin-bottom:10px}
 /* ---------- 추억 앨범 ---------- */
 .mem-day{padding:10px 0; border-bottom:1px dashed var(--line)}
 .mem-day:last-child{border-bottom:none}
@@ -310,12 +326,12 @@ textarea.f-input{resize:vertical; min-height:64px}
 @keyframes spinr{to{transform:rotate(360deg)}}
 .rules-box{background:#2E2A25; color:#EDE6DA; border-radius:12px; padding:12px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.68rem; line-height:1.55; white-space:pre; overflow-x:auto; margin-top:8px}
 
-.titem{user-select:none; -webkit-user-select:none}
+.titem{user-select:none; -webkit-user-select:none; transition:transform .16s ease}
 .titem input, .titem textarea{user-select:auto; -webkit-user-select:auto}
 .titem.past .tcard{opacity:.5}
 .titem.past .dot{border-color:#C9C0B4}
 .titem.now .tcard{border:2.5px solid var(--coral); box-shadow:0 4px 16px rgba(240,91,58,.22)}
-.titem.lift{z-index:30; position:relative}
+.titem.lift{z-index:30; position:relative; transition:none}
 .titem.lift .tcard{box-shadow:0 12px 28px rgba(90,60,30,.3); transform:scale(1.02); border:2px dashed var(--coral)}
 .fold{margin-left:auto; font-size:.74rem; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; gap:4px; padding:4px 0 0}
 .fold .cnts{font-weight:700}
@@ -394,7 +410,7 @@ textarea.f-input{resize:vertical; min-height:64px}
   <button class="tab active" data-v="home"><span class="ico">🏠</span><span class="lb">홈</span></button>
   <button class="tab" data-v="plan"><span class="ico">📅</span><span class="lb">일정</span></button>
   <button class="tab" data-v="map"><span class="ico">🗺️</span><span class="lb">지도</span></button>
-  <button class="tab" data-v="pack"><span class="ico">✅</span><span class="lb">준비물</span></button>
+  <button class="tab" data-v="pack"><span class="ico">🧾</span><span class="lb">리스트</span></button>
   <button class="tab" data-v="family"><span class="ico">👥</span><span class="lb">멤버</span></button>
 </nav>
 
@@ -420,7 +436,15 @@ const CATS = {
   "이동":{e:"🚕",bg:"#FFF6D9"}, "액티비티":{e:"🤿",bg:"#E4F2FB"},
   "쇼핑":{e:"🛍️",bg:"#FBEAF3"}, "기타":{e:"📌",bg:"#EFEFEA"},
 };
+const TRANSPORT = {car:{e:"🚗",n:"자동차"}, taxi:{e:"🚕",n:"택시"}, bus:{e:"🚌",n:"버스"}, subway:{e:"🚇",n:"지하철"}, flight:{e:"✈️",n:"비행기"}};
+function itemEmoji(i){
+  if(i && i.category==="이동" && i.transport && TRANSPORT[i.transport]) return TRANSPORT[i.transport].e;
+  return (CATS[(i&&i.category)]||CATS["기타"]).e;
+}
 const DAY_COLORS = ["#FF7A59","#17A2A2","#F4B400","#8E7CC3","#6AA84F","#E06666","#3D85C6"];
+const AVATARS = ["🙋","🧑","👩","👨","👧","👦","👵","👴","👶","😎","🥰","😺","🤗","😻",
+  "🐶","🐱","🐰","🐻","🐼","🐨","🦊","🐯","🦁","🐮","🐷","🐸","🐵","🐧","🐤","🦄",
+  "🐢","🦋","🐝","🐳","🐬","🦕","🌴","🥥","🍑","🍓","⭐","🌈","🌻","🍀"];
 /* 유명 장소 좌표 사전 — 이름이 일치하면 자동으로 지도에 표시 */
 const PLACE_COORDS = {
   "인천 → 푸꾸옥":{lat:10.1698,lng:103.9934},
@@ -519,6 +543,10 @@ function demoData(){
     {id:"p7", text:"방수팩", owner:"m3", done:true, createdBy:"m3"},
     {id:"p8", text:"카메라 + 충전기", owner:"m1", done:false, createdBy:"m1"},
     {id:"p9", text:"물놀이 튜브", owner:"m4", done:false, createdBy:"m4"},
+    {id:"s1", text:"후추 (푸꾸옥 특산)", owner:null, done:false, createdBy:"m2", kind:"shop"},
+    {id:"s2", text:"캐슈넛", owner:null, done:false, createdBy:"m1", kind:"shop"},
+    {id:"s3", text:"코코넛 캔디·건망고", owner:null, done:false, createdBy:"m4", kind:"shop"},
+    {id:"s4", text:"엄마 선물 (진주)", owner:"m3", done:false, createdBy:"m3", kind:"shop"},
   ];
   items[3].status = "완료"; items[10].status = "완료";
   items[3].comments = [
@@ -566,6 +594,7 @@ function load(){
   return migrate(demoData());
 }
 function migrate(d){
+  (d.pack||[]).forEach(p=>{ if(!p.kind) p.kind="pack"; });
   (d.items||[]).forEach(it=>{
     if(it.status==="후보"||it.status==="확정") it.status="예정";
     if(it.cost && !it.costCur) it.costCur="₫";
@@ -652,7 +681,7 @@ function toast(msg, undoFn){
 function renderOnboard(){
   const root = $("#onboardRoot");
   if(meId && member(meId)){ root.innerHTML=""; return; }
-  const emojis = ["🙋","🧔","👩","👧","👦","👴","👵","🧑"];
+  const emojis = AVATARS;
   root.innerHTML = `
   <div class="onboard">
     <div class="logo">🥥</div>
@@ -779,13 +808,13 @@ function renderHome(){
           <div class="track"><div class="fill" style="width:${Math.round(x.v/catTotals[0].v*100)}%"></div></div>
           <span class="val">${(x.v/10000).toFixed(1)}만원</span>
         </div>`).join("")}</div>`:""}
-      ${paid.length?`<div style="margin-top:10px"><div class="lbl2" style="margin-bottom:4px">✔ 쓴 내역 (완료한 일정)</div>${paid.slice(0,6).map(i=>{
+      ${paid.length?`<div style="margin-top:10px"><div class="lbl2" style="margin-bottom:4px">✔ 쓴 내역 (완료한 일정)</div>${paid.slice(0,4).map(i=>{
         const krw=Math.round(itemKrw(i));
         return `<div class="exp-row">
-          <span class="et">${(CATS[i.category]||CATS["기타"]).e} ${esc(i.title)}</span>
+          <span class="et">${itemEmoji(i)} ${esc(i.title)}</span>
           <span class="ev">${krw.toLocaleString("ko-KR")}원${i.costCur==="₫"?`<small style="color:var(--ink-soft);font-weight:600"> (${fmtVnd(i.cost)})</small>`:""}</span>
         </div>`;
-      }).join("")}</div>`:""}
+      }).join("")}${paid.length>4?`<div class="map-note" style="margin-top:4px">외 ${paid.length-4}건 더 (일정 탭에서 확인)</div>`:""}</div>`:""}
       <div class="imp-hint" style="margin-top:10px">💡 지출을 따로 적지 않아도 돼요! 일정에 <b>예상 비용</b>을 넣고, 실제로 쓰면 그 일정을 <b>'완료'로 표시</b>하면 여기 '현재까지 씀'에 자동으로 더해져요. (일정 카드 → ▾ 자세히 → 💸 완료로 표시)</div>
     </div>`;
 
@@ -1229,7 +1258,8 @@ function renderPlan(){
   let nowId = null;
   if(isToday){
     for(const it of items){
-      const endM = toMin(it.endTime)!=null ? toMin(it.endTime) : toMin(it.startTime);
+      let endM = toMin(it.endTime)!=null ? toMin(it.endTime) : toMin(it.startTime);
+      if(endM!=null && it.endNextDay) endM += 1440;
       if(endM!=null && endM < nmin) continue;
       nowId = it.id; break;
     }
@@ -1247,6 +1277,7 @@ function renderPlan(){
     ${items.length?`<div class="map-note">카드를 <b>꾹 눌러 위아래로 끌면</b> 순서가 바뀌어요</div>`:""}
     <div style="height:70px"></div>`;
   bindPlanDrag();
+  const _at=document.querySelector("#view-plan .day-tab.active"); if(_at) _at.scrollIntoView({inline:"center",block:"nearest"});
   if(window._scrollPlan){
     window._scrollPlan=false;
     setTimeout(()=>{ const nel=document.querySelector(".titem.now"); if(nel) nel.scrollIntoView({behavior:"smooth", block:"center"}); },120);
@@ -1296,14 +1327,17 @@ function bindPlanDrag(){
       return;
     }
     e.preventDefault();
-    el.style.transform=`translateY(${e.clientY-sy}px)`;
-    for(const s of tl.querySelectorAll(".titem")){
-      if(s===el) continue;
-      const r=s.getBoundingClientRect();
-      if(e.clientY>r.top && e.clientY<r.bottom){
-        if(e.clientY < r.top + r.height/2) tl.insertBefore(el, s);
-        else tl.insertBefore(el, s.nextSibling);
-        sy=e.clientY; el.style.transform="translateY(0)";
+    el.style.transform="";                         // 자연 위치 측정
+    const r=el.getBoundingClientRect();
+    const center=r.top+r.height/2;
+    el.style.transform=`translateY(${(e.clientY-center).toFixed(1)}px)`;  // 손가락에 고정
+    const sibs=[...tl.querySelectorAll(".titem")].filter(s=>s!==el);
+    for(const s of sibs){
+      const sr=s.getBoundingClientRect();
+      if(e.clientY>sr.top && e.clientY<sr.bottom){
+        const before = e.clientY < sr.top+sr.height/2;
+        if(before && s.previousElementSibling!==el) tl.insertBefore(el,s);
+        else if(!before && s.nextElementSibling!==el) tl.insertBefore(el,s.nextSibling);
         break;
       }
     }
@@ -1320,7 +1354,8 @@ function toggleFold(id){
 }
 function tItem(i, idx, len, isToday, nowId, nmin){
   const c = CATS[i.category]||CATS["기타"];
-  const endM = toMin(i.endTime)!=null ? toMin(i.endTime) : toMin(i.startTime);
+  let endM = toMin(i.endTime)!=null ? toMin(i.endTime) : toMin(i.startTime);
+  if(endM!=null && i.endNextDay) endM += 1440;
   const past = isToday && endM!=null && endM < nmin;
   const isNow = isToday && i.id===nowId;
   const stClass = `${i.status==="완료"?"done":""} ${past?"past":""} ${isNow?"now":""}`;
@@ -1332,11 +1367,11 @@ function tItem(i, idx, len, isToday, nowId, nmin){
   const cnts = `${i.cost?" 💰":""}${rTotal?" ❤️"+rTotal:""}${cmts.length?" 💬"+cmts.length:""}`;
   return `
   <div class="titem ${stClass}" data-id="${i.id}">
-    <div class="time-col">${i.startTime||"—"}${i.endTime?`<div class="end">~${i.endTime}</div>`:""}</div>
+    <div class="time-col">${i.startTime||"—"}${i.endTime?`<div class="end">~${i.endTime}${i.endNextDay?`<div style="color:var(--coral);font-weight:800">다음날</div>`:""}</div>`:""}</div>
     <div class="dot"></div>
     <div class="tcard">
       <div class="row1">
-        <span class="cat" style="background:${c.bg}">${c.e}</span>
+        <span class="cat" style="background:${c.bg}">${itemEmoji(i)}</span>
         <div style="flex:1;min-width:0">
           <div class="tt">${esc(i.title)}</div>
           ${i.place?`<div class="place">📍 ${esc(i.place.name)}</div>`:""}
@@ -1351,7 +1386,7 @@ function tItem(i, idx, len, isToday, nowId, nmin){
       </div>
       ${open?`
       ${i.cost?`<div class="cost" style="display:block;margin-top:8px">💰 ${i.costCur==="₩"?(Number(i.cost).toLocaleString("ko-KR")+"원"):(fmtVnd(i.cost)+` <small>(${fmtKrw(i.cost)})</small>`)}</div>`:""}
-      <button class="donebtn ${i.status==="완료"?"on":""}" onclick="toggleDone('${i.id}')">${i.status==="완료"?"✔ 완료됨 (지출 반영 중) · 예정으로 되돌리기":"💸 완료로 표시 (지출에 반영)"}</button>
+      <button class="donebtn ${i.status==="완료"?"on":""}" onclick="toggleDone('${i.id}')">${i.status==="완료"?"✅ 지출 반영됨":"💸 지출 반영"}</button>
       <div class="reactions">
         ${["👍","❤️","🤔"].map(e=>`<button class="rbtn ${myR===e?"on":""}" onclick="react('${i.id}','${e}')">${e}${rCount(e)?" "+rCount(e):""}</button>`).join("")}
       </div>
@@ -1414,7 +1449,7 @@ function openForm(id, preset){
   const edit = id ? S.items.find(x=>x.id===id) : null;
   formState = edit ? JSON.parse(JSON.stringify(edit)) : {
     id:null, dayIndex:(curView==="plan"?curDay:0), startTime:"", endTime:"",
-    title:"", category:"관광", place:null, memo:"", cost:0, costCur:"₫", status:"예정",
+    title:"", category:"관광", place:null, memo:"", cost:0, costCur:"₫", status:"예정", endNextDay:false,
   };
   if(preset && !edit) Object.assign(formState, preset);
   const f = formState;
@@ -1426,9 +1461,12 @@ function openForm(id, preset){
       <h2>${edit?"✏️ 일정 수정":"🌴 새 일정 추가"}<button class="x" onclick="closeModal()">✕</button></h2>
       <label class="f-label">무엇을 하나요? *</label>
       <input class="f-input" id="fTitle" placeholder="예: 사오비치에서 물놀이" value="${esc(f.title)}" maxlength="40">
-      <label class="f-label">카테고리</label>
+      <label class="f-label">카테고리 <span style="font-weight:600">('이동'은 꾹 누르면 교통수단 선택)</span></label>
       <div class="cat-grid" id="fCats">
-        ${Object.entries(CATS).map(([k,v])=>`<button class="cat-opt ${k===f.category?"sel":""}" data-c="${k}"><span class="e">${v.e}</span><span class="n">${k}</span></button>`).join("")}
+        ${Object.entries(CATS).map(([k,v])=>`<button class="cat-opt ${k===f.category?"sel":""}" data-c="${k}"><span class="e">${k==="이동"?((f.transport&&TRANSPORT[f.transport])?TRANSPORT[f.transport].e:"🚗"):v.e}</span><span class="n">${k}</span></button>`).join("")}
+      </div>
+      <div id="fTransport" class="trans-row ${f.category==="이동"?"":"hidden"}">
+        ${Object.entries(TRANSPORT).map(([k,v])=>`<button class="trans-opt ${(f.transport||'car')===k?'sel':''}" data-t="${k}"><span class="e">${v.e}</span><span class="n">${v.n}</span></button>`).join("")}
       </div>
       <label class="f-label">날짜</label>
       <select class="f-input" id="fDay">${dayOpts}</select>
@@ -1436,6 +1474,10 @@ function openForm(id, preset){
         <div><label class="f-label">시작 시간</label><input class="f-input" type="time" id="fStart" value="${f.startTime}"></div>
         <div><label class="f-label">종료 시간</label><input class="f-input" type="time" id="fEnd" value="${f.endTime}"></div>
       </div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-weight:700;font-size:.9rem;cursor:pointer">
+        <input type="checkbox" id="fOvernight" ${f.endNextDay?"checked":""} style="width:20px;height:20px;accent-color:var(--coral)">
+        🌙 종료가 다음 날이에요 (야간 이동·밤샘 등)
+      </label>
       <div class="map-note" style="text-align:left;margin-top:6px">💡 그 일정이 일어나는 곳의 시간으로 입력하세요 — 한국 일정은 한국 시간, 푸꾸옥 일정은 푸꾸옥 시간</div>
       <label class="f-label">장소 <span style="font-weight:600">(선택 · 이름 쓰고 🔍를 누르면 지도 위치를 찾아줘요)</span></label>
       <div class="searchrow">
@@ -1463,9 +1505,31 @@ function openForm(id, preset){
       ${edit?`<button class="btn-danger-line" onclick="askDelete('${edit.id}')">🗑 이 일정 삭제</button>`:""}
     </div>
   </div>`;
-  $("#fCats").querySelectorAll(".cat-opt").forEach(b=>b.onclick=()=>{
-    formState.category=b.dataset.c;
-    $("#fCats").querySelectorAll(".cat-opt").forEach(x=>x.classList.toggle("sel",x===b));
+  function paintCat(){
+    $("#fCats").querySelectorAll(".cat-opt").forEach(x=>x.classList.toggle("sel",x.dataset.c===formState.category));
+    const mv = formState.category==="이동";
+    $("#fTransport").classList.toggle("hidden", !mv);
+    const mvBtn = $("#fCats").querySelector('.cat-opt[data-c="이동"] .e');
+    if(mvBtn) mvBtn.textContent = (formState.transport&&TRANSPORT[formState.transport])?TRANSPORT[formState.transport].e:"🚗";
+    $("#fTransport").querySelectorAll(".trans-opt").forEach(x=>x.classList.toggle("sel",x.dataset.t===(formState.transport||"car")));
+  }
+  $("#fCats").querySelectorAll(".cat-opt").forEach(b=>{
+    b.onclick=()=>{
+      formState.category=b.dataset.c;
+      if(b.dataset.c==="이동" && !formState.transport) formState.transport="car";
+      paintCat();
+    };
+    if(b.dataset.c==="이동"){
+      let lp=null;
+      const start=()=>{ lp=setTimeout(()=>{ formState.category="이동"; if(!formState.transport) formState.transport="car"; paintCat();
+        $("#fTransport").scrollIntoView({block:"nearest"}); if(navigator.vibrate)try{navigator.vibrate(25)}catch(_){}} , 380); };
+      const cancel=()=>{ if(lp) clearTimeout(lp); };
+      b.addEventListener("pointerdown",start); b.addEventListener("pointerup",cancel);
+      b.addEventListener("pointerleave",cancel); b.addEventListener("pointercancel",cancel);
+    }
+  });
+  $("#fTransport").querySelectorAll(".trans-opt").forEach(b=>b.onclick=()=>{
+    formState.category="이동"; formState.transport=b.dataset.t; paintCat();
   });
   $("#fStatus").querySelectorAll("button").forEach(b=>b.onclick=()=>{
     formState.status=b.dataset.s;
@@ -1494,6 +1558,7 @@ function submitForm(){
   f.title = title;
   f.dayIndex = +$("#fDay").value;
   f.startTime = $("#fStart").value; f.endTime = $("#fEnd").value;
+  f.endNextDay = $("#fOvernight").checked;
   const pname = $("#fPlace").value.trim();
   f.place = pname ? {...(f.place||{}), name:pname} : null;
   if(f.place){
@@ -1504,6 +1569,7 @@ function submitForm(){
   }
   f.cost = +$("#fCost").value || 0;
   f.costCur = window._fCostCur || "₫";
+  f.transport = formState.category==="이동" ? (formState.transport||"car") : null;
   if(f.id){
     const i = S.items.findIndex(x=>x.id===f.id);
     f.updatedBy = meId; f.updatedAt = Date.now();
@@ -1769,7 +1835,7 @@ function memberJoinModal(){
       <div class="searchrow">
         <input class="f-input" id="nmName" placeholder="닉네임 (예: 이모)" maxlength="8">
         <select class="f-input" id="nmEmoji" style="flex:0 0 86px">
-          ${"🙋,🧔,👩,👧,👦,👴,👵,🧑".split(",").map(e=>`<option>${e}</option>`).join("")}
+          ${AVATARS.map(e=>`<option>${e}</option>`).join("")}
         </select>
       </div>
       <button class="btn-primary" onclick="joinAsNew()">이 이름으로 참여 🥥</button>
@@ -2148,12 +2214,14 @@ function renderMap(){
       for(let k=0;k<pts.length-1;k++){
         const a=pts[k], b=pts[k+1];
         const km=havKm(a.place,b.place), est=estDriveMin(km);
-        const isLong = km>60; // 푸꾸옥 섬은 최대 ~50km → 그 이상은 비행기/페리
+        const mv = b.category==="이동" ? b.transport : (a.category==="이동" ? a.transport : null);
+        const isLong = km>60 || mv==="flight"; // 섬 최대 ~50km 초과 또는 비행기면 장거리
         const gap=(toMin(b.startTime)!=null&&toMin(a.endTime)!=null)?toMin(b.startTime)-toMin(a.endTime):null;
         const tight = !isLong && gap!=null && gap < est*0.75;
+        const modeTxt = mv&&TRANSPORT[mv] ? TRANSPORT[mv].e+" "+TRANSPORT[mv].n : "🚗 차로";
         const info = isLong
-          ? `${Math.round(km).toLocaleString("ko-KR")}km · ✈️ 장거리 이동(비행기·페리)`
-          : (km<0.05?"같은 위치":km.toFixed(1)+"km · 차로 약 "+est+"분")+(gap!=null?" · 여유 "+gap+"분":"");
+          ? `${Math.round(km).toLocaleString("ko-KR")}km · ${mv==="flight"?"✈️ 비행기":"✈️ 장거리(비행기·페리)"} 이동`
+          : (km<0.05?"같은 위치":km.toFixed(1)+"km · "+modeTxt+" 약 "+est+"분")+(gap!=null?" · 여유 "+gap+"분":"");
         rows+=`<div class="seg">
           <span class="n" style="background:${DAY_COLORS[mapDay%7]}">${k+1}</span>
           <div><div class="tt2">${esc(a.title)} → ${esc(b.title)}</div>
@@ -2196,7 +2264,7 @@ function renderMap(){
     ${playHtml}
     ${listHtml}
     ${noCoord.length?`<div class="card"><div class="sec-title">📍 지도에 없는 일정 <small>${noCoord.length}개</small></div>
-      ${noCoord.slice(0,6).map(i=>`<div class="nocoord"><span>${(CATS[i.category]||CATS["기타"]).e}</span> ${esc(i.title)}
+      ${noCoord.slice(0,6).map(i=>`<div class="nocoord"><span>${itemEmoji(i)}</span> ${esc(i.title)}
         <button class="fix" onclick="openForm('${i.id}')">좌표 넣기 ✏️</button></div>`).join("")}
       <div class="map-note" style="margin-top:8px">✏️에서 장소 이름을 쓰고 🔍 검색하면 자동으로 지도에 표시돼요</div></div>`:""}
     <div style="height:60px"></div>`;
@@ -2362,13 +2430,17 @@ function stopAnim(resetBtn=true){
 /* ================================================================
    준비물 체크리스트 (5단계) — 공용 + 개인별
    ================================================================ */
+let listView = "pack"; // pack | shop
+function setListView(v){ listView=v; renderPack(); }
 function renderPack(){
-  const total=S.pack.length, done=S.pack.filter(p=>p.done).length;
+  const kind=listView, isShop=kind==="shop";
+  const all=S.pack.filter(p=>(p.kind||"pack")===kind);
+  const total=all.length, done=all.filter(p=>p.done).length;
   const me = member(meId);
-  const common = S.pack.filter(p=>!p.owner);
-  const mine = S.pack.filter(p=>p.owner===meId);
+  const common = all.filter(p=>!p.owner);
+  const mine = all.filter(p=>p.owner===meId);
   const others = S.trip.members.filter(m=>m.id!==meId)
-    .map(m=>({m, list:S.pack.filter(p=>p.owner===m.id)})).filter(x=>x.list.length);
+    .map(m=>({m, list:all.filter(p=>p.owner===m.id)})).filter(x=>x.list.length);
   const row = p=>{
     const ow = p.owner ? member(p.owner) : null;
     return `<div class="pk ${p.done?"done":""}">
@@ -2378,16 +2450,21 @@ function renderPack(){
       <button class="del" onclick="delPack('${p.id}')">✕</button>
     </div>`;
   };
+  const noun = isShop?"살 것":"준비물";
   $("#view-pack").innerHTML = `
-    <div class="card">
-      <div class="sec-title">🎒 챙김 현황 <small>${done} / ${total} 완료</small></div>
-      <div class="prog"><div style="width:${total?Math.round(done/total*100):0}%"></div></div>
-      ${total&&done===total?`<div class="map-note">모두 챙겼어요! 출발 준비 완료 🎉</div>`:""}
+    <div class="seg" style="margin:2px 2px 12px">
+      <button class="${kind==='pack'?'sel':''}" onclick="setListView('pack')">🎒 준비물</button>
+      <button class="${kind==='shop'?'sel':''}" onclick="setListView('shop')">🛍️ 쇼핑리스트</button>
     </div>
     <div class="card">
-      <div class="sec-title">➕ 준비물 추가</div>
+      <div class="sec-title">${isShop?"🛍️ 쇼핑 진행":"🎒 준비 진행"} <small>${done} / ${total} ${isShop?"구매":"완료"}</small></div>
+      <div class="prog"><div style="width:${total?Math.round(done/total*100):0}%"></div></div>
+      ${total&&done===total?`<div class="map-note">${isShop?"쇼핑 완료! 🛍️":"모두 챙겼어요! 출발 준비 완료 🎉"}</div>`:""}
+    </div>
+    <div class="card">
+      <div class="sec-title">➕ ${noun} 추가</div>
       <div class="addrow">
-        <input class="f-input" id="pkText" placeholder="예: 선글라스" maxlength="30" onkeydown="if(event.key==='Enter')addPack()">
+        <input class="f-input" id="pkText" placeholder="${isShop?'예: 후추, 캐슈넛, 기념품':'예: 선글라스'}" maxlength="30" onkeydown="if(event.key==='Enter')addPack()">
         <select class="f-input" id="pkOwner">
           <option value="">공용</option>
           ${S.trip.members.map(m=>`<option value="${m.id}" ${m.id===meId?"selected":""}>${m.emoji} ${esc(m.nickname)}</option>`).join("")}
@@ -2396,14 +2473,14 @@ function renderPack(){
       </div>
     </div>
     <div class="card">
-      <div class="sec-title">👨‍👩‍👧 공용 준비물</div>
-      ${common.length?common.map(row).join(""):`<div class="empty">공용 준비물을 추가해보세요</div>`}
+      <div class="sec-title">👨‍👩‍👧 공용 ${noun}</div>
+      ${common.length?common.map(row).join(""):`<div class="empty">${isShop?"함께 살 것을 추가해보세요":"공용 준비물을 추가해보세요"}</div>`}
     </div>
     <div class="card">
-      <div class="sec-title">${me?me.emoji+" 내":"🙋 내"} 준비물</div>
+      <div class="sec-title">${me?me.emoji+" 내":"🙋 내"} ${noun}</div>
       ${mine.length?mine.map(row).join(""):`<div class="empty">위에서 담당을 '${me?esc(me.nickname):"나"}'로 골라 추가해보세요</div>`}
     </div>
-    ${others.map(x=>`<div class="card"><div class="sec-title">${x.m.emoji} ${esc(x.m.nickname)} 준비물</div>${x.list.map(row).join("")}</div>`).join("")}
+    ${others.map(x=>`<div class="card"><div class="sec-title">${x.m.emoji} ${esc(x.m.nickname)} ${noun}</div>${x.list.map(row).join("")}</div>`).join("")}
     <div style="height:60px"></div>`;
 }
 function togglePack(id){
@@ -2413,10 +2490,10 @@ function togglePack(id){
 function addPack(){
   const t=$("#pkText").value.trim();
   if(!t){ $("#pkText").focus(); return; }
-  const p={id:"p"+Date.now(), text:t, owner:$("#pkOwner").value||null, done:false, createdBy:meId};
+  const p={id:"p"+Date.now()+Math.floor(Math.random()*1e3), text:t, owner:$("#pkOwner").value||null, done:false, createdBy:meId, kind:listView};
   S.pack.push(p);
-  addFeed(`준비물 '${t}'을(를) 추가했어요 🎒`);
-  syncPack(p); renderPack(); toast("준비물을 추가했어요!");
+  addFeed(`${listView==="shop"?"쇼핑리스트":"준비물"}에 '${t}'을(를) 추가했어요 ${listView==="shop"?"🛍️":"🎒"}`);
+  syncPack(p); renderPack(); toast("추가했어요!");
 }
 function delPack(id){
   const p=S.pack.find(x=>x.id===id); if(!p) return;
@@ -2425,6 +2502,11 @@ function delPack(id){
 }
 
 /* ---------- 날씨 (open-meteo, API키 불필요) ---------- */
+function wxLabel(c){
+  if(c===0) return "맑음"; if(c<=2) return "구름 조금"; if(c===3) return "흐림";
+  if(c<=49) return "안개"; if(c<=57) return "이슬비"; if(c<=67) return "비";
+  if(c<=82) return "소나기"; return "뇌우";
+}
 function wxEmoji(c){
   if(c===0) return "☀️"; if(c<=2) return "🌤️"; if(c===3) return "☁️";
   if(c<=49) return "🌫️"; if(c<=57) return "🌦️"; if(c<=67) return "🌧️";
@@ -2464,12 +2546,23 @@ async function loadWeather(){
     const j=await r.json();
     if(!j.daily||!j.daily.time||!j.daily.time.length) throw 0;
     window._wx = j;
-    box.innerHTML=`<div class="wx">${j.daily.time.map((t,i)=>`
-      <div class="wd" onclick="openHourly('${t}')" style="cursor:pointer"><div class="t2">${+t.slice(5,7)}/${+t.slice(8,10)}</div>
-      <div class="e2">${wxEmoji(j.daily.weather_code[i])}</div>
-      <div class="t1">${Math.round(j.daily.temperature_2m_max[i])}°</div>
-      <div class="t2">${Math.round(j.daily.temperature_2m_min[i])}° · 💧${j.daily.precipitation_probability_max[i]??0}%</div></div>`).join("")}</div>
-      <div class="map-note" style="margin-top:6px">📅 날짜를 누르면 시간별 날씨를 볼 수 있어요${partial?" · 여행 뒷부분은 날짜가 가까워지면 채워져요":""}</div>`;
+    const dl=j.daily, WK=['일','월','화','수','목','금','토'];
+    const days=dl.time.map((t,i)=>({t, code:dl.weather_code[i], max:Math.round(dl.temperature_2m_max[i]),
+      min:Math.round(dl.temperature_2m_min[i]), rain:dl.precipitation_probability_max[i]??0}));
+    const avgMax=Math.round(days.reduce((a,d)=>a+d.max,0)/days.length);
+    const maxRain=Math.max(...days.map(d=>d.rain));
+    const head = maxRain>=60 ? `☂️ 여행 중 비 소식 (최대 ${maxRain}%) — 우산 챙기세요`
+      : maxRain>=30 ? `🌦️ 가끔 소나기 (최대 ${maxRain}%) · 낮 ${avgMax}°`
+      : `☀️ 대체로 맑고 더워요 · 낮 ${avgMax}°`;
+    box.innerHTML=`<div class="wx-head">${head}</div>
+      <div class="wx">${days.map(d=>{const wd=new Date(d.t+'T00:00:00');
+      return `<div class="wd" onclick="openHourly('${d.t}')">
+        <div class="wdt">${+d.t.slice(5,7)}/${+d.t.slice(8,10)}<small>(${WK[wd.getDay()]})</small></div>
+        <div class="e2">${wxEmoji(d.code)}</div>
+        <div class="wl">${wxLabel(d.code)}</div>
+        <div class="t1">${d.max}°<span class="lo"> ${d.min}°</span></div>
+        <div class="wr ${d.rain>=60?'hi':''}">💧 ${d.rain}%</div></div>`;}).join("")}</div>
+      <div class="map-note" style="margin-top:6px">📅 날짜를 누르면 시간별 날씨${partial?" · 뒷부분은 날짜가 가까워지면 채워져요":""}</div>`;
   }catch(err){
     // 실패하면 에러 대신 계절 안내로 대체 (항상 유용한 정보가 보이도록)
     box.innerHTML = climate("📡 실시간 예보를 잠시 못 불러왔어요 — 위는 이달 평균 날씨예요");
@@ -2477,8 +2570,39 @@ async function loadWeather(){
 }
 
 /* ---------- 가족 탭 ---------- */
+function editMe(){
+  const m=member(meId); if(!m) return;
+  const emojis=AVATARS;
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>✏️ 내 이름 바꾸기<button class="x" onclick="closeModal()">✕</button></h2>
+      <label class="f-label">닉네임</label>
+      <input class="f-input" id="meName" maxlength="8" value="${esc(m.nickname)}">
+      <label class="f-label">이모지</label>
+      <div class="emoji-grid" style="justify-content:flex-start;max-width:none">
+        ${emojis.map(e=>`<button class="eopt ${e===m.emoji?'sel':''}" style="background:var(--cream)">${e}</button>`).join("")}
+      </div>
+      <button class="btn-primary" onclick="saveMe()">저장하기</button>
+    </div>
+  </div>`;
+  $("#modalRoot").querySelectorAll(".eopt").forEach(b=>b.onclick=()=>{
+    $("#modalRoot").querySelectorAll(".eopt").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  setTimeout(()=>$("#meName").focus(),250);
+}
+function saveMe(){
+  const m=member(meId); if(!m) return;
+  const name=$("#meName").value.trim();
+  if(!name){ $("#meName").style.borderColor="var(--danger)"; $("#meName").focus(); return; }
+  const sel=document.querySelector("#modalRoot .eopt.sel");
+  m.nickname=name; if(sel) m.emoji=sel.textContent;
+  if(FB.on){ try{ roomRef().update({members:JSON.parse(JSON.stringify(S.trip.members))}).catch(fbErr); }catch(e){} }
+  addFeed("이름을 바꿨어요 ✏️");
+  save(); closeModal(); renderAll(); toast(`${m.emoji} ${name}님으로 바꿨어요!`);
+}
 function renderFamily(){
-  const expOf = id => S.expenses.filter(x=>x.by===id).reduce((a,x)=>a+(x.cur==="₩"?+x.amt:x.amt*EX_RATE),0);
+  const expOf = id => S.items.filter(i=>i.status==="완료"&&i.createdBy===id).reduce((a,i)=>a+itemKrw(i),0);
   const cmtOf = id => S.items.reduce((a,i)=>a+(i.comments||[]).filter(c=>c.by===id).length,0);
   $("#view-family").innerHTML = `
     <div class="card family-list">
@@ -2488,8 +2612,8 @@ function renderFamily(){
           <div class="avatar" style="background:${m.color}">${m.emoji}</div>
           <div><div class="nm">${esc(m.nickname)} ${m.id===meId?'<span style="font-size:.72rem;color:var(--coral-dark)">(나)</span>':""}</div>
           <div class="role">일정 ${S.items.filter(i=>i.createdBy===m.id).length} · 지출 ${(expOf(m.id)/10000).toFixed(0)}만원 · 댓글 ${cmtOf(m.id)}</div></div>
-          ${m.id!==meId?`<button class="swap" onclick="pickMe('${m.id}')">전환</button>
-          <button class="icon-btn" style="flex-shrink:0" onclick="askDelMember('${m.id}')">✕</button>`:""}
+          ${m.id===meId?`<button class="swap" onclick="editMe()">✏️ 이름</button>`:`<button class="swap" onclick="pickMe('${m.id}')">전환</button>
+          <button class="icon-btn" style="flex-shrink:0" onclick="askDelMember('${m.id}')">✕</button>`}
         </div>`).join("")}
       <div class="map-note" style="margin-top:8px">멤버는 각자 앱을 열고 이름을 입력하면 자동으로 추가돼요</div>
     </div>
