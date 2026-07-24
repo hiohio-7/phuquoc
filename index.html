@@ -1448,7 +1448,14 @@ function doDelete(id){
    가족 실시간 공유 (4단계) — Firebase Firestore (선택 설정)
    설정 없이도 혼자 쓰는 모드로 완전히 작동합니다.
    ================================================================ */
-const FIREBASE_CONFIG = null; // 파일에 직접 넣으려면 여기에 {apiKey:"...", ...} — 가족 탭에서 붙여넣는 게 더 쉬워요
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAyOMhK5GIK5Sd_ggkLCOq02yMjfGxI_oU",
+  authDomain: "phuquoc-1bbde.firebaseapp.com",
+  projectId: "phuquoc-1bbde",
+  storageBucket: "phuquoc-1bbde.firebasestorage.app",
+  messagingSenderId: "703106630215",
+  appId: "1:703106630215:web:1a52bcf2e3969f2a412762"
+}; // 가족 공용 Firebase 설정 (config는 공개돼도 안전 — 보안은 Firestore 규칙이 담당)
 const FB = {on:false, status:"off", db:null, code:null, unsub:[], err:null};
 let pendingRender = false;
 
@@ -2318,25 +2325,37 @@ async function loadWeather(){
   const box=$("#wxBox"); if(!box) return;
   const today=new Date(); today.setHours(0,0,0,0);
   const s=new Date(S.trip.startDate+"T00:00:00"), e=new Date(S.trip.endDate+"T00:00:00");
-  const daysTo=Math.round((s-today)/86400e3);
-  if(daysTo>14){
-    box.innerHTML=`<div class="imp-hint" style="margin-top:0">${climateNote(s.getMonth()+1)}<br>📅 출발 2주 전부터 날짜별 실제 예보가 여기에 떠요 (지금 D-${daysTo})</div>`;
+  const validDates = !isNaN(s) && !isNaN(e);
+  const month = validDates ? s.getMonth()+1 : (new Date().getMonth()+1);
+  const daysTo = validDates ? Math.round((s-today)/86400e3) : NaN;
+  // 계절 안내(예보 범위 밖이거나 날짜 미설정일 때)
+  const climate = extra => `<div class="imp-hint" style="margin-top:0">${climateNote(month)}${extra?"<br>"+extra:""}</div>`;
+  // 여행이 2주 이상 남았거나 날짜가 없으면 계절 안내
+  if(isNaN(daysTo) || daysTo>16){
+    box.innerHTML = climate(isNaN(daysTo)
+      ? "📅 여행 날짜를 정하면 날짜별 예보가 여기에 떠요 (헤더의 날짜를 눌러 설정)"
+      : `📅 출발 약 2주 전부터 날짜별 실제 예보가 떠요 (지금 D-${daysTo})`);
     return;
   }
   try{
     const f=d=>d.toISOString().slice(0,10);
-    const start=daysTo>0?s:today;
-    const end=new Date(Math.min(+e, +start+15*86400e3));
+    const start = daysTo>0 ? s : today;
+    // open-meteo 예보는 오늘 기준 최대 16일까지만 제공 → 그 범위로 자름
+    const maxEnd = +today + 16*86400e3;
+    const end = new Date(Math.min(+e, maxEnd));
+    const partial = +e > maxEnd;   // 여행 뒷부분이 예보 범위를 넘음
     const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=10.22&longitude=103.96&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FBangkok&start_date=${f(start)}&end_date=${f(end)}`);
     const j=await r.json();
-    if(!j.daily||!j.daily.time.length) throw 0;
+    if(!j.daily||!j.daily.time||!j.daily.time.length) throw 0;
     box.innerHTML=`<div class="wx">${j.daily.time.map((t,i)=>`
       <div class="wd"><div class="t2">${+t.slice(5,7)}/${+t.slice(8,10)}</div>
       <div class="e2">${wxEmoji(j.daily.weather_code[i])}</div>
       <div class="t1">${Math.round(j.daily.temperature_2m_max[i])}°</div>
-      <div class="t2">${Math.round(j.daily.temperature_2m_min[i])}° · 💧${j.daily.precipitation_probability_max[i]??0}%</div></div>`).join("")}</div>`;
+      <div class="t2">${Math.round(j.daily.temperature_2m_min[i])}° · 💧${j.daily.precipitation_probability_max[i]??0}%</div></div>`).join("")}</div>
+      ${partial?`<div class="map-note" style="margin-top:6px">여행 뒷부분은 예보 범위(16일)를 넘어 날짜가 가까워지면 채워져요</div>`:""}`;
   }catch(err){
-    box.innerHTML=`<div class="empty">날씨를 불러올 수 없어요 — 인터넷 연결을 확인해주세요</div>`;
+    // 실패하면 에러 대신 계절 안내로 대체 (항상 유용한 정보가 보이도록)
+    box.innerHTML = climate("📡 실시간 예보를 잠시 못 불러왔어요 — 위는 이달 평균 날씨예요");
   }
 }
 
