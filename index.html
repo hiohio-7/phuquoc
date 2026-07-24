@@ -256,6 +256,22 @@ textarea.f-input{resize:vertical; min-height:64px}
 .costbar .fill{height:100%; background:var(--coral); border-radius:0 4px 4px 0; min-width:2px}
 .costbar .val{flex:0 0 66px; text-align:right; font-size:.74rem; font-weight:700; color:var(--ink-soft)}
 .conv{display:flex; gap:8px; align-items:center; margin-top:12px}
+.conv2{display:flex; gap:8px; align-items:center; margin-top:12px}
+.conv2 input{flex:1; min-width:0; text-align:right}
+.conv2 select{flex:0 0 84px}
+.conv2 span{flex-shrink:0; font-weight:800; color:var(--ink-soft)}
+.cvOut{margin-top:8px; text-align:right; font-weight:700; color:var(--ink-soft); min-height:1.2em; font-size:.95rem}
+.cvOut b{color:var(--coral-dark); font-size:1.05rem}
+.hourly{max-height:56vh; overflow-y:auto}
+.hr{display:flex; align-items:center; gap:12px; padding:9px 4px; border-bottom:1px dashed var(--line)}
+.hr:last-child{border-bottom:none}
+.hr .hh{flex:0 0 46px; font-weight:800; color:var(--ink-soft)}
+.hr .he{font-size:1.4rem; flex:0 0 34px; text-align:center}
+.hr .htp{flex:0 0 46px; font-weight:800; font-size:1.02rem}
+.hr .hpp{margin-left:auto; font-size:.82rem; color:var(--teal-dark); font-weight:700}
+.donebtn{width:100%; margin-top:10px; padding:11px; border-radius:12px; font-weight:800; font-size:.9rem; background:var(--cream2); color:var(--ink-soft)}
+.donebtn.on{background:var(--teal-light); color:var(--teal-dark)}
+.donebtn:active{transform:scale(.98)}
 .conv input{text-align:right; min-width:0}
 .conv span{flex-shrink:0; font-weight:800; color:var(--ink-soft); font-size:.85rem}
 /* ---------- 날씨 ---------- */
@@ -504,6 +520,7 @@ function demoData(){
     {id:"p8", text:"카메라 + 충전기", owner:"m1", done:false, createdBy:"m1"},
     {id:"p9", text:"물놀이 튜브", owner:"m4", done:false, createdBy:"m4"},
   ];
+  items[3].status = "완료"; items[10].status = "완료";
   items[3].comments = [
     {id:"c1", by:"m4", text:"코코넛 아이스크림 꼭 먹을래!", ts:Date.now()-5400e3},
     {id:"c2", by:"m2", text:"해산물은 익힌 걸로만~ 🦐", ts:Date.now()-3600e3},
@@ -743,36 +760,33 @@ function renderHome(){
     .map(k=>({k, v:S.items.reduce((a,i)=>a+(i.category===k?itemKrw(i):0),0)}))
     .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   const expK = Math.round(catTotals.reduce((a,x)=>a+x.v,0));
-  const spent = spentKrw();
+  const paid = S.items.filter(i=>i.status==="완료" && (+i.cost||0)>0)
+    .sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  const spent = S.items.reduce((a,i)=>a+(i.status==="완료"?itemKrw(i):0),0);
   const pct = expK ? Math.min(999, Math.round(spent/expK*100)) : 0;
-  const recent = [...S.expenses].sort((a,b)=>b.ts-a.ts).slice(0,5);
   const expCard = `
     <div class="card">
       <div class="sec-title">💰 우리 여행 경비</div>
       <div class="spent-sum">
         <div class="stat"><div class="num">${expK?(expK/10000).toFixed(0)+"만원":"—"}</div><div class="lbl">예상 경비 (일정 합계)</div></div>
-        <div class="stat"><div class="num sp">${(spent/10000).toFixed(1)}만원</div><div class="lbl">현재까지 씀 · ${S.expenses.length}건</div></div>
+        <div class="stat"><div class="num sp">${(spent/10000).toFixed(1)}만원</div><div class="lbl">현재까지 씀 · 완료 ${paid.length}건</div></div>
       </div>
-      ${expK&&pct<=100?`<div class="prog"><div style="width:${pct}%;background:linear-gradient(90deg,var(--teal),var(--teal-dark))"></div></div>
-      <div class="map-note">일정에 적어둔 예상 경비의 ${pct}%를 썼어요</div>`
-      :`<div class="map-note">항공권·예약금 등 일정 외 지출까지 모두 합친 금액이에요</div>`}
+      ${expK?`<div class="prog"><div style="width:${Math.min(pct,100)}%;background:linear-gradient(90deg,var(--teal),var(--teal-dark))"></div></div>
+      <div class="map-note">예상 경비의 ${pct}%를 썼어요 (완료한 일정 기준)</div>`:""}
       ${catTotals.length?`<div style="margin-top:10px">${catTotals.map(x=>`
         <div class="costbar">
           <span class="lbl2">${CATS[x.k].e} ${x.k}</span>
           <div class="track"><div class="fill" style="width:${Math.round(x.v/catTotals[0].v*100)}%"></div></div>
           <span class="val">${(x.v/10000).toFixed(1)}만원</span>
         </div>`).join("")}</div>`:""}
-      ${recent.length?`<div style="margin-top:10px">${recent.map(x=>{
-        const m = member(x.by);
-        const krw = x.cur==="₩" ? +x.amt : Math.round(x.amt*EX_RATE);
+      ${paid.length?`<div style="margin-top:10px"><div class="lbl2" style="margin-bottom:4px">✔ 쓴 내역 (완료한 일정)</div>${paid.slice(0,6).map(i=>{
+        const krw=Math.round(itemKrw(i));
         return `<div class="exp-row">
-          <span class="when">${esc(x.when||"")}</span>
-          <span class="et">${m?m.emoji+" ":""}${esc(x.title)}</span>
-          <span class="ev">${krw.toLocaleString("ko-KR")}원${x.cur==="₫"?`<small style="color:var(--ink-soft);font-weight:600"> (${fmtVnd(x.amt)})</small>`:""}</span>
-          <button class="del" onclick="delExpense('${x.id}')">✕</button>
+          <span class="et">${(CATS[i.category]||CATS["기타"]).e} ${esc(i.title)}</span>
+          <span class="ev">${krw.toLocaleString("ko-KR")}원${i.costCur==="₫"?`<small style="color:var(--ink-soft);font-weight:600"> (${fmtVnd(i.cost)})</small>`:""}</span>
         </div>`;
       }).join("")}</div>`:""}
-      <button class="btn-primary" style="margin-top:12px" onclick="openExpense()">➕ 지출 기록하기</button>
+      <div class="imp-hint" style="margin-top:10px">💡 지출을 따로 적지 않아도 돼요! 일정에 <b>예상 비용</b>을 넣고, 실제로 쓰면 그 일정을 <b>'완료'로 표시</b>하면 여기 '현재까지 씀'에 자동으로 더해져요. (일정 카드 → ▾ 자세히 → 💸 완료로 표시)</div>
     </div>`;
 
   /* ---- 추억 앨범 (여행 종료 후) ---- */
@@ -818,18 +832,20 @@ function renderHome(){
     <div class="card">
       <div class="sec-title">💱 오늘 환율 <small>실시간</small></div>
       <div id="fxBox"><div class="empty">불러오는 중…</div></div>
-      <div class="conv">
-        <input class="f-input" id="cvV" inputmode="numeric" placeholder="동 (VND)">
-        <span>₫ ≈</span>
-        <input class="f-input" id="cvK" readonly placeholder="원 (KRW)">
+      <div class="conv2">
+        <input class="f-input" id="cvAmt" inputmode="numeric" placeholder="금액 입력">
+        <select class="f-input" id="cvFrom"><option value="KRW">🇰🇷 원</option><option value="USD">🇺🇸 달러</option><option value="VND">🇻🇳 동</option></select>
+        <span>→</span>
+        <select class="f-input" id="cvTo"><option value="USD">🇺🇸 달러</option><option value="KRW">🇰🇷 원</option><option value="VND">🇻🇳 동</option></select>
       </div>
+      <div class="cvOut" id="cvOut"></div>
     </div>
     <div style="text-align:center;margin:4px 0 12px">
       <button style="color:var(--ink-soft);font-size:.8rem;font-weight:700" onclick="openHelp()">📖 앱 사용법 보기</button>
     </div>`;
 
-  const cv=$("#cvV");
-  if(cv) cv.oninput=ev=>{ const v=+ev.target.value||0; $("#cvK").value = v?Math.round(v*EX_RATE).toLocaleString("ko-KR")+"원":""; };
+  ["cvAmt","cvFrom","cvTo"].forEach(id=>{ const el=$("#"+id); if(el){ el.oninput=runConv; el.onchange=runConv; } });
+  runConv();
   document.querySelectorAll(".diary-input").forEach(t=>t.onchange=ev=>{
     S.diary[ev.target.dataset.day]=ev.target.value;
     syncDiary(); toast("추억을 저장했어요 ✨");
@@ -1073,6 +1089,27 @@ function openHelp(){
 }
 
 /* ---------- 실시간 환율 (open.er-api.com, API키 불필요) ---------- */
+function openHourly(dateStr){
+  const j=window._wx;
+  if(!j || !j.hourly){ toast("시간별 날씨는 예보 제공 기간(약 2주 전부터)에만 볼 수 있어요"); return; }
+  const idx=[]; j.hourly.time.forEach((t,i)=>{ if(t.slice(0,10)===dateStr) idx.push(i); });
+  if(!idx.length){ toast("이 날짜의 시간별 정보가 아직 없어요"); return; }
+  const d=new Date(dateStr+"T00:00:00");
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>🌤️ ${fmtDate(d,{month:'long',day:'numeric',weekday:'short'})} 시간별 날씨<button class="x" onclick="closeModal()">✕</button></h2>
+      <div class="hourly">
+        ${idx.map(i=>{const hh=+j.hourly.time[i].slice(11,13);
+          return `<div class="hr"><span class="hh">${String(hh).padStart(2,'0')}시</span>
+          <span class="he">${wxEmoji(j.hourly.weather_code[i])}</span>
+          <span class="htp">${Math.round(j.hourly.temperature_2m[i])}°</span>
+          <span class="hpp">💧 ${j.hourly.precipitation_probability[i]??0}%</span></div>`;}).join("")}
+      </div>
+      <div class="map-note" style="margin-top:8px">비 올 확률이 높은 시간대는 실내 일정으로 바꿔보세요 ☂️</div>
+    </div>
+  </div>`;
+}
 async function loadFx(){
   const box=$("#fxBox"); if(!box) return;
   const draw=(usd, vnd10k, when, live)=>{
@@ -1095,13 +1132,25 @@ async function loadFx(){
     }
     const newRate=fx.krw/fx.vnd;
     const changed=Math.abs(newRate-EX_RATE)/EX_RATE>0.005;
-    EX_RATE=newRate;
+    EX_RATE=newRate; window._fx=fx; runConv();
     draw(fx.krw, 10000*newRate,
       new Date(fx.ts).toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"})+" "+new Date(fx.ts).getHours()+"시", true);
     if(changed && !loadFx._re){ loadFx._re=true; renderHome(); }
   }catch(e){
-    draw(1350, 10000*EX_RATE, "", false);
+    window._fx = window._fx || {krw:1350, vnd:Math.round(1350/EX_RATE)};
+    draw(window._fx.krw, 10000*EX_RATE, "", false); runConv();
   }
+}
+function runConv(){
+  const amtEl=$("#cvAmt"); if(!amtEl) return;
+  const amt=+amtEl.value||0, from=$("#cvFrom").value, to=$("#cvTo").value, out=$("#cvOut");
+  const sym={KRW:"원",USD:"달러",VND:"동"};
+  if(!amt){ out.textContent=""; return; }
+  const fx=window._fx; if(!fx){ out.textContent="환율 불러오는 중…"; return; }
+  const usd = from==="USD"?amt : from==="KRW"?amt/fx.krw : amt/fx.vnd;
+  const res = to==="USD"?usd : to==="KRW"?usd*fx.krw : usd*fx.vnd;
+  const fmt = c=> c==="USD"? res.toFixed(2) : Math.round(res).toLocaleString("ko-KR");
+  out.innerHTML = `${amt.toLocaleString("ko-KR")}${sym[from]} ≈ <b>${fmt(to)}${sym[to]}</b>`;
 }
 
 /* ---------- 내 주변 음식점 (위치 동의 → OSM 검색 → 구글지도 연결) ---------- */
@@ -1302,6 +1351,7 @@ function tItem(i, idx, len, isToday, nowId, nmin){
       </div>
       ${open?`
       ${i.cost?`<div class="cost" style="display:block;margin-top:8px">💰 ${i.costCur==="₩"?(Number(i.cost).toLocaleString("ko-KR")+"원"):(fmtVnd(i.cost)+` <small>(${fmtKrw(i.cost)})</small>`)}</div>`:""}
+      <button class="donebtn ${i.status==="완료"?"on":""}" onclick="toggleDone('${i.id}')">${i.status==="완료"?"✔ 완료됨 (지출 반영 중) · 예정으로 되돌리기":"💸 완료로 표시 (지출에 반영)"}</button>
       <div class="reactions">
         ${["👍","❤️","🤔"].map(e=>`<button class="rbtn ${myR===e?"on":""}" onclick="react('${i.id}','${e}')">${e}${rCount(e)?" "+rCount(e):""}</button>`).join("")}
       </div>
@@ -1317,6 +1367,14 @@ function tItem(i, idx, len, isToday, nowId, nmin){
       </div>`:""}
     </div>
   </div>`;
+}
+function toggleDone(id){
+  const it=S.items.find(x=>x.id===id); if(!it) return;
+  it.status = it.status==="완료" ? "예정" : "완료";
+  it.updatedBy=meId; it.updatedAt=Date.now();
+  addFeed(it.status==="완료"?`'${it.title}'을(를) 완료했어요 ✔`:`'${it.title}'을(를) 예정으로 되돌렸어요`);
+  syncItems(it); renderPlan();
+  toast(it.status==="완료"?"완료로 표시했어요 — 지출에 반영돼요 💸":"예정으로 되돌렸어요");
 }
 function sendComment(id){
   const inp=document.querySelector(`.cmt-in[data-id="${id}"]`);
@@ -2090,12 +2148,16 @@ function renderMap(){
       for(let k=0;k<pts.length-1;k++){
         const a=pts[k], b=pts[k+1];
         const km=havKm(a.place,b.place), est=estDriveMin(km);
+        const isLong = km>60; // 푸꾸옥 섬은 최대 ~50km → 그 이상은 비행기/페리
         const gap=(toMin(b.startTime)!=null&&toMin(a.endTime)!=null)?toMin(b.startTime)-toMin(a.endTime):null;
-        const tight = gap!=null && gap < est*0.75;
+        const tight = !isLong && gap!=null && gap < est*0.75;
+        const info = isLong
+          ? `${Math.round(km).toLocaleString("ko-KR")}km · ✈️ 장거리 이동(비행기·페리)`
+          : (km<0.05?"같은 위치":km.toFixed(1)+"km · 차로 약 "+est+"분")+(gap!=null?" · 여유 "+gap+"분":"");
         rows+=`<div class="seg">
           <span class="n" style="background:${DAY_COLORS[mapDay%7]}">${k+1}</span>
           <div><div class="tt2">${esc(a.title)} → ${esc(b.title)}</div>
-          <div class="info">${km<0.05?"같은 위치":km.toFixed(1)+"km · 차로 약 "+est+"분"}${gap!=null?" · 여유 "+gap+"분":""}</div></div>
+          <div class="info">${info}</div></div>
           ${tight?`<span class="warn">⚠️ 빠듯해요</span>`:""}
         </div>`;
       }
@@ -2398,15 +2460,16 @@ async function loadWeather(){
     const maxEnd = +today + 16*86400e3;
     const end = new Date(Math.min(+e, maxEnd));
     const partial = +e > maxEnd;   // 여행 뒷부분이 예보 범위를 넘음
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=10.22&longitude=103.96&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FBangkok&start_date=${f(start)}&end_date=${f(end)}`);
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=10.22&longitude=103.96&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,weather_code,precipitation_probability&timezone=Asia%2FBangkok&start_date=${f(start)}&end_date=${f(end)}`);
     const j=await r.json();
     if(!j.daily||!j.daily.time||!j.daily.time.length) throw 0;
+    window._wx = j;
     box.innerHTML=`<div class="wx">${j.daily.time.map((t,i)=>`
-      <div class="wd"><div class="t2">${+t.slice(5,7)}/${+t.slice(8,10)}</div>
+      <div class="wd" onclick="openHourly('${t}')" style="cursor:pointer"><div class="t2">${+t.slice(5,7)}/${+t.slice(8,10)}</div>
       <div class="e2">${wxEmoji(j.daily.weather_code[i])}</div>
       <div class="t1">${Math.round(j.daily.temperature_2m_max[i])}°</div>
       <div class="t2">${Math.round(j.daily.temperature_2m_min[i])}° · 💧${j.daily.precipitation_probability_max[i]??0}%</div></div>`).join("")}</div>
-      ${partial?`<div class="map-note" style="margin-top:6px">여행 뒷부분은 예보 범위(16일)를 넘어 날짜가 가까워지면 채워져요</div>`:""}`;
+      <div class="map-note" style="margin-top:6px">📅 날짜를 누르면 시간별 날씨를 볼 수 있어요${partial?" · 여행 뒷부분은 날짜가 가까워지면 채워져요":""}</div>`;
   }catch(err){
     // 실패하면 에러 대신 계절 안내로 대체 (항상 유용한 정보가 보이도록)
     box.innerHTML = climate("📡 실시간 예보를 잠시 못 불러왔어요 — 위는 이달 평균 날씨예요");
