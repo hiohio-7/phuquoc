@@ -551,6 +551,7 @@ function load(){
 function migrate(d){
   (d.items||[]).forEach(it=>{
     if(it.status==="후보"||it.status==="확정") it.status="예정";
+    if(it.cost && !it.costCur) it.costCur="₫";
     if(it.memo){
       it.comments = it.comments||[];
       it.comments.unshift({id:"m"+it.id, by:it.createdBy||"m1", text:it.memo, ts:it.updatedAt||Date.now()});
@@ -567,6 +568,39 @@ const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","
 const member = id => S.trip.members.find(m=>m.id===id);
 const fmtVnd = v => v ? Number(v).toLocaleString("vi-VN")+"₫" : "";
 const fmtKrw = v => v ? "약 "+Math.round(v*EX_RATE).toLocaleString("ko-KR")+"원" : "";
+/* 시간대: 자동(기기 위치) / 한국 / 푸꾸옥 — 지난·다음 일정과 헤더 시계의 '지금' 기준 */
+const TZ = { kr:{id:"Asia/Seoul", label:"🇰🇷 한국"}, vn:{id:"Asia/Ho_Chi_Minh", label:"🇻🇳 푸꾸옥"} };
+let tzMode = localStorage.getItem("pqgo_tz") || "auto";  // auto | kr | vn
+function effTz(){
+  if(tzMode==="kr") return TZ.kr;
+  if(tzMode==="vn") return TZ.vn;
+  try{
+    const z = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if(["Asia/Ho_Chi_Minh","Asia/Bangkok","Asia/Phnom_Penh","Asia/Vientiane","Asia/Jakarta"].includes(z)) return TZ.vn;
+    if(["Asia/Seoul","Asia/Tokyo","Asia/Pyongyang"].includes(z)) return TZ.kr;
+    const off = -new Date().getTimezoneOffset()/60;   // 기기 UTC 오프셋(시간)
+    return off <= 7.5 ? TZ.vn : TZ.kr;
+  }catch(e){ return TZ.kr; }
+}
+function cycleTz(){
+  tzMode = tzMode==="auto" ? "kr" : (tzMode==="kr" ? "vn" : "auto");
+  localStorage.setItem("pqgo_tz", tzMode);
+  renderAll();
+  toast(`${effTz().label} 시간 기준으로 볼게요${tzMode==="auto"?" (기기 위치 자동)":""}`);
+}
+/* 선택된 시간대의 '지금' — 일정 시간 문자열 자체는 바꾸지 않음 */
+function pqParts(){
+  const p = new Intl.DateTimeFormat('en-GB',{timeZone:effTz().id,hourCycle:'h23',
+    year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).formatToParts(new Date());
+  const g = t => p.find(x=>x.type===t).value;
+  return {y:+g('year'), mo:+g('month'), d:+g('day'), h:+g('hour')%24, mi:+g('minute')};
+}
+function pqTodayStr(){ const p=pqParts(); return `${p.y}-${String(p.mo).padStart(2,'0')}-${String(p.d).padStart(2,'0')}`; }
+function pqToday(){ return new Date(pqTodayStr()+"T00:00:00"); }
+function pqNowMin(){ const p=pqParts(); return p.h*60+p.mi; }
+function pqNowHM(){ const p=pqParts(); return String(p.h).padStart(2,'0')+":"+String(p.mi).padStart(2,'0'); }
+/* 일정 비용을 원화로 (통화 선택 반영) */
+function itemKrw(i){ const c=+i.cost||0; return i.costCur==="₩" ? c : c*EX_RATE; }
 function dayCount(){
   return Math.round((new Date(S.trip.endDate) - new Date(S.trip.startDate))/86400e3)+1;
 }
@@ -664,10 +698,15 @@ function renderHeader(){
   $("#appTitle").textContent = S.trip.title || "푸꾸옥 꼬우!";
   $("#tripDates").textContent =
     `${fmtDate(s,{month:"numeric",day:"numeric"})} ~ ${fmtDate(e,{month:"numeric",day:"numeric"})} · ${dayCount()-1}박 ${dayCount()}일 · 멤버 ${S.trip.members.length}명 ✏️`;
-  const today = new Date(); today.setHours(0,0,0,0);
+  const today = pqToday();
   const dd = Math.round((s-today)/86400e3);
   $("#dday").textContent = dd>0 ? `D-${dd} 🥥` : (today<=e ? "여행 중! 🏖️" : "다녀왔어요 ✨");
-  $("#todayLine").textContent = "오늘은 " + new Date().toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"long"});
+  const tz = effTz();
+  $("#todayLine").innerHTML = `${tz.label}${tzMode==="auto"?" (자동)":""} 지금 ` +
+    pqToday().toLocaleDateString("ko-KR",{month:"long",day:"numeric",weekday:"short"}) + " " + pqNowHM() +
+    ' <span style="opacity:.9;text-decoration:underline">· 시간대 변경</span>';
+  $("#todayLine").style.cursor="pointer";
+  $("#todayLine").onclick = cycleTz;
 }
 
 /* ---------- 홈 ---------- */
@@ -676,7 +715,7 @@ let feedPage = 0;
 function setFeedPage(p){ feedPage=p; renderHome(); }
 function homeDefaultDay(){
   const s = new Date(S.trip.startDate+"T00:00:00");
-  const today = new Date(); today.setHours(0,0,0,0);
+  const today = pqToday();
   if(today < s) return 0;
   return Math.min(Math.max(Math.round((today-s)/86400e3),0), dayCount()-1);
 }
@@ -691,7 +730,7 @@ function spentKrw(){
 function renderHome(){
   const s = new Date(S.trip.startDate+"T00:00:00");
   const e = new Date(S.trip.endDate+"T00:00:00");
-  const today = new Date(); today.setHours(0,0,0,0);
+  const today = pqToday();
   const over = today > e;
   const feedPages = Math.max(1, Math.ceil(S.feed.length/3));
   if(feedPage >= feedPages) feedPage = feedPages-1;
@@ -701,10 +740,9 @@ function renderHome(){
 
   /* ---- 경비 카드 (예상 + 실제 지출) ---- */
   const catTotals = Object.keys(CATS)
-    .map(k=>({k, v:S.items.reduce((a,i)=>a+(i.category===k?(+i.cost||0):0),0)}))
+    .map(k=>({k, v:S.items.reduce((a,i)=>a+(i.category===k?itemKrw(i):0),0)}))
     .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
-  const totalV = catTotals.reduce((a,x)=>a+x.v,0);
-  const expK = Math.round(totalV*EX_RATE);
+  const expK = Math.round(catTotals.reduce((a,x)=>a+x.v,0));
   const spent = spentKrw();
   const pct = expK ? Math.min(999, Math.round(spent/expK*100)) : 0;
   const recent = [...S.expenses].sort((a,b)=>b.ts-a.ts).slice(0,5);
@@ -722,7 +760,7 @@ function renderHome(){
         <div class="costbar">
           <span class="lbl2">${CATS[x.k].e} ${x.k}</span>
           <div class="track"><div class="fill" style="width:${Math.round(x.v/catTotals[0].v*100)}%"></div></div>
-          <span class="val">${(x.v*EX_RATE/10000).toFixed(1)}만원</span>
+          <span class="val">${(x.v/10000).toFixed(1)}만원</span>
         </div>`).join("")}</div>`:""}
       ${recent.length?`<div style="margin-top:10px">${recent.map(x=>{
         const m = member(x.by);
@@ -813,7 +851,7 @@ function renderHome(){
 /* ---------- 지출 기록 ---------- */
 function expWhenLabel(){
   const s=new Date(S.trip.startDate+"T00:00:00"), e=new Date(S.trip.endDate+"T00:00:00");
-  const today=new Date(); today.setHours(0,0,0,0);
+  const today=pqToday();
   if(today<s) return "여행 전";
   if(today>e) return "여행 후";
   return "DAY "+(Math.round((today-s)/86400e3)+1);
@@ -1137,8 +1175,8 @@ function renderPlan(){
       <div class="d">DAY ${i+1}</div><div class="dt">${fmtDate(d,{month:"numeric",day:"numeric",weekday:"short"})}</div></button>`;
   }
   const items = dayItems(curDay);
-  const isToday = dayDate(curDay).toDateString() === new Date().toDateString();
-  const nmin = new Date().getHours()*60 + new Date().getMinutes();
+  const isToday = dayDate(curDay).toDateString() === pqToday().toDateString();
+  const nmin = pqNowMin();
   let nowId = null;
   if(isToday){
     for(const it of items){
@@ -1263,7 +1301,7 @@ function tItem(i, idx, len, isToday, nowId, nmin){
         <button class="fold" onclick="toggleFold('${i.id}')">${open?"▴ 접기":"▾ 자세히"}<span class="cnts">${cnts}</span></button>
       </div>
       ${open?`
-      ${i.cost?`<div class="cost" style="display:block;margin-top:8px">💰 ${fmtVnd(i.cost)} <small>(${fmtKrw(i.cost)})</small></div>`:""}
+      ${i.cost?`<div class="cost" style="display:block;margin-top:8px">💰 ${i.costCur==="₩"?(Number(i.cost).toLocaleString("ko-KR")+"원"):(fmtVnd(i.cost)+` <small>(${fmtKrw(i.cost)})</small>`)}</div>`:""}
       <div class="reactions">
         ${["👍","❤️","🤔"].map(e=>`<button class="rbtn ${myR===e?"on":""}" onclick="react('${i.id}','${e}')">${e}${rCount(e)?" "+rCount(e):""}</button>`).join("")}
       </div>
@@ -1318,7 +1356,7 @@ function openForm(id, preset){
   const edit = id ? S.items.find(x=>x.id===id) : null;
   formState = edit ? JSON.parse(JSON.stringify(edit)) : {
     id:null, dayIndex:(curView==="plan"?curDay:0), startTime:"", endTime:"",
-    title:"", category:"관광", place:null, memo:"", cost:0, status:"예정",
+    title:"", category:"관광", place:null, memo:"", cost:0, costCur:"₫", status:"예정",
   };
   if(preset && !edit) Object.assign(formState, preset);
   const f = formState;
@@ -1340,6 +1378,7 @@ function openForm(id, preset){
         <div><label class="f-label">시작 시간</label><input class="f-input" type="time" id="fStart" value="${f.startTime}"></div>
         <div><label class="f-label">종료 시간</label><input class="f-input" type="time" id="fEnd" value="${f.endTime}"></div>
       </div>
+      <div class="map-note" style="text-align:left;margin-top:6px">💡 그 일정이 일어나는 곳의 시간으로 입력하세요 — 한국 일정은 한국 시간, 푸꾸옥 일정은 푸꾸옥 시간</div>
       <label class="f-label">장소 <span style="font-weight:600">(선택 · 이름 쓰고 🔍를 누르면 지도 위치를 찾아줘요)</span></label>
       <div class="searchrow">
         <input class="f-input" id="fPlace" placeholder="예: Sao Beach" value="${esc(f.place?.name||"")}">
@@ -1348,9 +1387,15 @@ function openForm(id, preset){
       <div id="fPlaceRes"></div>
       <label class="f-label">지도 좌표 <span style="font-weight:600">(선택 · 구글지도에서 장소를 꾹 누르면 나오는 숫자)</span></label>
       <input class="f-input" id="fCoord" placeholder="예: 10.2158, 103.9584" value="${f.place&&f.place.lat!=null?f.place.lat+", "+f.place.lng:""}">
-      <label class="f-label">예상 비용 (VND · 동)</label>
-      <input class="f-input" type="number" id="fCost" inputmode="numeric" placeholder="예: 500000" value="${f.cost||""}">
-      <div class="krw-hint" id="fKrw">${f.cost?("≈ "+fmtKrw(f.cost)):""}</div>
+      <label class="f-label">예상 비용 <span style="font-weight:600">(통화 선택 · 항공권은 원, 현지 지출은 동)</span></label>
+      <div class="searchrow">
+        <input class="f-input" type="number" id="fCost" inputmode="numeric" placeholder="예: 500000" value="${f.cost||""}">
+        <div class="seg" id="fCostCur" style="flex:0 0 128px">
+          <button data-c="₫" class="${(f.costCur||'₫')==='₫'?'sel':''}">₫ 동</button>
+          <button data-c="₩" class="${f.costCur==='₩'?'sel':''}">₩ 원</button>
+        </div>
+      </div>
+      <div class="krw-hint" id="fKrw"></div>
       <label class="f-label">상태</label>
       <div class="seg" id="fStatus">
         <button data-s="예정" class="${f.status!=="완료"?"sel":""}">🌴 예정</button>
@@ -1368,7 +1413,15 @@ function openForm(id, preset){
     formState.status=b.dataset.s;
     $("#fStatus").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));
   });
-  $("#fCost").oninput = e=>{ $("#fKrw").textContent = e.target.value?("≈ "+fmtKrw(+e.target.value)):""; };
+  window._fCostCur = formState.costCur || "₫";
+  const updCostHint=()=>{ const v=+$("#fCost").value||0;
+    $("#fKrw").textContent = (v&&window._fCostCur==="₫") ? ("≈ "+fmtKrw(v)) : (v&&window._fCostCur==="₩"?"원화로 입력 중":""); };
+  $("#fCostCur").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    window._fCostCur=b.dataset.c;
+    $("#fCostCur").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));
+    updCostHint();
+  });
+  $("#fCost").oninput = updCostHint; updCostHint();
   setTimeout(()=>$("#fTitle").focus(), 250);
 }
 function closeModal(){
@@ -1392,6 +1445,7 @@ function submitForm(){
     if(f.place.lat==null && PLACE_COORDS[pname]) Object.assign(f.place, PLACE_COORDS[pname]);
   }
   f.cost = +$("#fCost").value || 0;
+  f.costCur = window._fCostCur || "₫";
   if(f.id){
     const i = S.items.findIndex(x=>x.id===f.id);
     f.updatedBy = meId; f.updatedAt = Date.now();
@@ -2323,7 +2377,7 @@ function climateNote(m){
 }
 async function loadWeather(){
   const box=$("#wxBox"); if(!box) return;
-  const today=new Date(); today.setHours(0,0,0,0);
+  const today=pqToday();
   const s=new Date(S.trip.startDate+"T00:00:00"), e=new Date(S.trip.endDate+"T00:00:00");
   const validDates = !isNaN(s) && !isNaN(e);
   const month = validDates ? s.getMonth()+1 : (new Date().getMonth()+1);
