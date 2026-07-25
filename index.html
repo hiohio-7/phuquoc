@@ -102,12 +102,9 @@ input,select,textarea{font-family:inherit;font-size:1rem}
 .titem .time-col .end{font-weight:600; font-size:.68rem; opacity:.75}
 .titem .dot{
   position:absolute; left:-23px; top:16px; width:15px; height:15px; border-radius:50%;
-  background:var(--white); border:4px solid var(--coral); z-index:1;
+  background:var(--white); border:4px solid #DAD3C8; z-index:1; transition:border-color .2s, box-shadow .2s;
 }
-.titem.cand .dot{border-color:var(--gold)}
-.titem.done .dot{border-color:#B9B1A6}
 .tcard{background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:13px 14px; position:relative}
-.titem.done .tcard{opacity:.72}
 .tcard .row1{display:flex; align-items:flex-start; gap:9px}
 .tcard .cat{font-size:1.5rem; flex-shrink:0; width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center}
 .tcard .tt{font-weight:800; font-size:1rem; letter-spacing:-.01em}
@@ -272,6 +269,15 @@ textarea.f-input{resize:vertical; min-height:64px}
 .cvOut b{color:var(--coral-dark); font-size:1.05rem}
 .reco{display:flex; align-items:center; gap:10px; background:var(--teal-light); border-radius:12px; padding:11px 13px}
 .reco-txt{font-weight:800; font-size:.92rem; color:var(--teal-dark)}
+.reco-chips{display:flex; flex-wrap:wrap; gap:7px}
+.reco-chip{border:1.5px solid var(--teal); background:var(--teal-light); color:var(--teal-dark); border-radius:999px; padding:7px 12px; font-size:.84rem; font-weight:700; line-height:1.1}
+.reco-chip:active{transform:scale(.95)}
+.reco-chip.done{border-color:var(--line); background:var(--cream); color:var(--ink-soft)}
+.news-item{display:block; padding:9px 2px; border-bottom:1px dashed var(--line); text-decoration:none; color:inherit}
+.news-item:last-of-type{border-bottom:none}
+.news-item:active{background:var(--cream)}
+.news-item .nt{font-weight:700; font-size:.9rem; line-height:1.35}
+.news-item .ns{font-size:.72rem; color:var(--ink-soft); margin-top:2px}
 button.stat{font-family:inherit}
 .hourly{max-height:56vh; overflow-y:auto}
 .hr{display:flex; align-items:center; gap:12px; padding:9px 4px; border-bottom:1px dashed var(--line)}
@@ -332,8 +338,10 @@ button.stat{font-family:inherit}
 .titem{user-select:none; -webkit-user-select:none; transition:transform .16s ease}
 .titem input, .titem textarea{user-select:auto; -webkit-user-select:auto}
 .titem.past .tcard{opacity:.5}
-.titem.past .dot{border-color:#C9C0B4}
+.titem.past .dot{border-color:#C9C0B4; background:#EFEAE2}
 .titem.now .tcard{border:2.5px solid var(--coral); box-shadow:0 4px 16px rgba(240,91,58,.22)}
+.titem.now .dot{border-color:var(--coral); box-shadow:0 0 0 4px rgba(255,122,89,.22); animation:nowpulse 1.7s ease-in-out infinite}
+@keyframes nowpulse{0%,100%{box-shadow:0 0 0 3px rgba(255,122,89,.30)}50%{box-shadow:0 0 0 8px rgba(255,122,89,.08)}}
 .titem.lift{z-index:30; position:relative; transition:none}
 .titem.lift .tcard{box-shadow:0 12px 28px rgba(90,60,30,.3); transform:scale(1.02); border:2px dashed var(--coral)}
 .fold{margin-left:auto; font-size:.74rem; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; gap:4px; padding:4px 0 0}
@@ -499,11 +507,17 @@ const KKOU_TIPS = [
 /* ---------- 준비물·쇼핑 추천 (리스트 탭에서 순환) ---------- */
 const PACK_RECO = ["🕶️ 선글라스","🧴 선크림 SPF50","🩴 아쿠아슈즈·슬리퍼","🏊 수영복·래시가드","🧢 모자",
   "☂️ 접이식 우산(스콜 대비)","🦟 모기 기피제","🔋 보조배터리","💊 상비약(지사제·멀미약)","🩹 밴드·소독약",
-  "🧻 물티슈·휴대 티슈","👕 얇은 긴팔(냉방·햇빛 가리개)","🔌 충전 케이블","🛂 여권 사본·사진","💵 달러 현금",
-  "🤿 스노클링 장비","🧳 압축팩","💧 휴대용 물통","👶 아이 상비약·간식","🧦 기내 목베개"];
+  "🧻 물티슈·휴대 티슈","👕 얇은 긴팔(냉방·햇빛 가리개)","🔌 충전 케이블·멀티탭","🛂 여권 사본·사진","💵 달러 현금",
+  "🤿 스노클링 장비","🧳 압축팩","💧 휴대용 물통","👶 아이 상비약·간식","🧦 기내 목베개",
+  "🩱 비치타월·수건","🧢 아이 래시가드·구명조끼","🪥 세면도구·칫솔","🧴 알로에·화상 연고","👓 도수 물안경",
+  "🔦 방수팩·지퍼백","🩴 여벌 슬리퍼","🧻 휴지·손소독제","🕶️ 아이 선글라스","📄 여행자보험·항공권 캡처",
+  "🍬 멀미약·비상 간식","🔌 유심·이심(현지 데이터)"];
 const SHOP_RECO = ["🌶️ 푸꾸옥 후추","🥜 캐슈넛","🍬 코코넛 캔디","🥭 건망고","☕ G7 커피·콩카페 원두",
   "🐟 느억맘(피시소스)","🍜 라이스페이퍼","🧴 마사지 오일","🧣 실크·린넨 스카프","🦪 진주 액세서리",
-  "🧺 라탄백","🥥 코코넛 그릇·수공예품","🍵 연꽃차","🧼 수제 비누","🍫 열대과일 젤리","🧂 소금·라임 시즈닝"];
+  "🧺 라탄백","🥥 코코넛 그릇·수공예품","🍵 연꽃차","🧼 수제 비누","🍫 열대과일 젤리","🧂 소금·라임 시즈닝",
+  "🫖 하이랜드·쯩응우옌 커피","🍯 야생 꿀","🧴 코코넛 오일","🐚 조개·자개 공예품","👜 자수 파우치",
+  "🩴 쪼리·라탄 슬리퍼","🍶 느억맘 미니어처","🧢 베트남 논라(모자)","🍪 코코넛 쿠키","🌰 마카다미아",
+  "🧃 열대과일 말랭이","🪷 연꽃 비누·차 세트","🖼️ 옻칠·자개 소품","🧦 실크 스카프·손수건"];
 
 /* ---------- 데모 데이터 ---------- */
 function demoData(){
@@ -834,6 +848,10 @@ function renderHome(){
       </div>`:""}
     </div>
     <div class="card">
+      <div class="sec-title">📰 푸꾸옥·베트남 여행 소식</div>
+      <div id="newsBox"><div class="empty">불러오는 중…</div></div>
+    </div>
+    <div class="card">
       <div class="sec-title">🏝️ 푸꾸옥 여행 정보</div>
       <div class="imp-hint" style="margin-top:0">명소·해변·유적지·맛집 추천 모음 — 마음에 들면 그 자리에서 바로 일정에 추가할 수 있어요!</div>
       <button class="btn-primary" style="margin-top:10px;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openGuide()">🏝️ 추천 여행 정보 보기</button>
@@ -876,6 +894,7 @@ function renderHome(){
   }
   if(!over) loadWeather();
   loadFx();
+  loadNews();
 }
 
 /* ---------- 지출 기록 ---------- */
@@ -988,7 +1007,21 @@ const GUIDE = [
  {c:"맛집",e:"🍤",name:"Xin Chao Restaurant",d:"⭐4.5 · 한국인에게 유명한 해산물집, 갈릭새우 추천",lat:10.1968,lng:103.9631},
  {c:"맛집",e:"🍜",name:"Pho Xua",d:"⭐4.3 · 아침 쌀국수(포) 해장 맛집",lat:10.2145,lng:103.9595},
  {c:"맛집",e:"🍧",name:"Buddy Ice Cream",d:"⭐4.4 · 즈엉동 인기 디저트·젤라또 카페",lat:10.2166,lng:103.9576},
+ {c:"맛집",e:"🦞",name:"Nhà Hàng Ra Khơi",d:"⭐4.4 · 현지인도 찾는 대형 해산물 식당",lat:10.2131,lng:103.9602},
+ {c:"맛집",e:"🦑",name:"Hương Biển (흐엉비엔)",d:"⭐4.2 · 즈엉동 해변 해산물집",lat:10.2118,lng:103.9585},
+ {c:"맛집",e:"🦀",name:"Bánh Canh Ghẹ",d:"⭐4.3 · 꽃게 우동 '반깐게' 별미",lat:10.2152,lng:103.9599},
+ {c:"맛집",e:"🌯",name:"Nem Nướng Thanh Vân",d:"⭐4.4 · 넴느엉(구운 소시지) 쌈밥",lat:10.2138,lng:103.9607},
+ {c:"맛집",e:"🍚",name:"Cơm Gà Hải Nam",d:"⭐4.3 · 하이난식 치킨라이스 백반",lat:10.2160,lng:103.9612},
+ {c:"맛집",e:"🥘",name:"Sen Restaurant",d:"⭐4.3 · 정갈한 베트남 코스요리",lat:10.2049,lng:103.9645},
+ {c:"맛집",e:"🍹",name:"Sailing Club Signature",d:"⭐4.4 · 선셋타운 해변 클럽 다이닝",lat:10.0170,lng:104.0082},
+ {c:"맛집",e:"🌶️",name:"The Spice House (Cassia Cottage)",d:"⭐4.5 · 향신료 정원 속 로맨틱 레스토랑",lat:10.1962,lng:103.9635},
+ {c:"맛집",e:"🍚",name:"Family Garden Restaurant",d:"⭐4.4 · 넓은 정원, 가족 단위 인기",lat:10.2075,lng:103.9628},
+ {c:"맛집",e:"🍖",name:"Nhà Hàng Biển Xanh",d:"⭐4.2 · 가성비 해산물 BBQ",lat:10.2143,lng:103.9590},
  {c:"카페",e:"🌿",name:"Alanam Coffee",d:"⭐4.6 · 정글 감성 대형 카페, 아이들과 가기 좋음",lat:10.2320,lng:103.9620},
+ {c:"카페",e:"☕",name:"Le Jardin Café",d:"⭐4.4 · 즈엉동 브런치·디저트 카페",lat:10.2158,lng:103.9575},
+ {c:"카페",e:"🧋",name:"Coco Musli",d:"⭐4.3 · 코코넛 스무디볼·아사이볼 인기",lat:10.2149,lng:103.9588},
+ {c:"카페",e:"🌴",name:"Mango Bay Eco Café",d:"⭐4.4 · 자연 속 힐링 카페·리조트",lat:10.2540,lng:103.9330},
+ {c:"카페",e:"☕",name:"Trung Nguyên Legend",d:"⭐4.3 · 베트남 대표 커피 체인 — 연유커피",lat:10.2172,lng:103.9601},
  {c:"쇼핑",e:"🛒",name:"킹콩마트",d:"후추·캐슈넛·커피 기념품 원스톱 쇼핑"},
  {c:"쇼핑",e:"🦪",name:"진주농장 (Ngoc Hien)",d:"푸꾸옥 특산 진주 — 시연 구경만도 재미",lat:10.1310,lng:103.9670},
 ];
@@ -1005,6 +1038,12 @@ function renderGuide(){
       <div class="map-chips" style="padding-bottom:8px">
         ${cats.map(ct=>`<button class="mchip2 ${ct===guideCat?"active":""}" onclick="guideCat='${ct}';renderGuide()">${ct}</button>`).join("")}
       </div>
+      <a class="res-item" style="text-decoration:none;color:inherit;background:var(--teal-light);border-radius:12px;padding:10px;margin-bottom:6px" target="_blank" rel="noopener"
+        href="https://www.google.com/maps/search/${encodeURIComponent("푸꾸옥 "+(guideCat==="전체"?"가볼만한 곳":guideCat))}/@10.22,103.96,11z">
+        <span class="pin">🔎</span>
+        <div style="min-width:0"><div class="nm2">구글 지도에서 실시간으로 더 찾기</div>
+        <div class="ad">최신 평점·리뷰·새로 생긴 ${guideCat==="전체"?"명소·맛집":guideCat}까지</div></div>
+        <span class="go">열기 ›</span></a>
       ${list.map((g,i)=>`
         <div class="res-item" style="cursor:default">
           <span class="pin">${g.e}</span>
@@ -1155,6 +1194,37 @@ async function loadFx(){
     draw(window._fx.krw, 10000*EX_RATE, "", false); runConv();
   }
 }
+async function loadNews(){
+  const box=$("#newsBox"); if(!box) return;
+  try{ const c=JSON.parse(localStorage.getItem("pqgo_news")||"null");
+    if(c && (Date.now()-c.ts)<3600e3 && c.items && c.items.length){ renderNews(c.items); return; } }catch(e){}
+  const rss="https://news.google.com/rss/search?"+"q="+encodeURIComponent("푸꾸옥 여행 OR 푸꾸옥 OR 베트남 여행")+"&hl=ko&gl=KR&ceid=KR:ko";
+  const proxies=[u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+                 u=>"https://corsproxy.io/?url="+encodeURIComponent(u)];
+  for(const px of proxies){
+    try{
+      const r=await fetch(px(rss)); if(!r.ok) continue;
+      const txt=await r.text();
+      const xml=new DOMParser().parseFromString(txt,"text/xml");
+      const items=[...xml.querySelectorAll("item")].slice(0,6).map(it=>({
+        title:(it.querySelector("title")||{}).textContent||"",
+        link:(it.querySelector("link")||{}).textContent||"",
+        date:(it.querySelector("pubDate")||{}).textContent||"",
+        source:(it.getElementsByTagName("source")[0]||{}).textContent||""}));
+      if(items.length){ localStorage.setItem("pqgo_news",JSON.stringify({ts:Date.now(),items})); renderNews(items); return; }
+    }catch(e){}
+  }
+  box.innerHTML=`<div class="imp-hint" style="margin-top:0">지금은 뉴스를 못 불러왔어요.
+    <a href="https://news.google.com/search?q=${encodeURIComponent("푸꾸옥 여행")}&hl=ko" target="_blank" rel="noopener" style="color:var(--coral-dark);font-weight:800">구글 뉴스에서 보기 ›</a></div>`;
+}
+function renderNews(items){
+  const box=$("#newsBox"); if(!box) return;
+  const rel=d=>{ try{const days=Math.round((Date.now()-new Date(d))/86400e3); return days<=0?"오늘":(days+"일 전");}catch(e){return"";} };
+  box.innerHTML=items.map(n=>`<a class="news-item" href="${esc(n.link)}" target="_blank" rel="noopener">
+    <div class="nt">${esc(n.title.replace(/ - [^-]*$/,""))}</div>
+    <div class="ns">${esc(n.source||"뉴스")}${n.date?" · "+rel(n.date):""}</div></a>`).join("")
+    +`<div class="map-note" style="margin-top:6px">📰 구글 뉴스 실시간 · 제목을 누르면 기사로 이동해요</div>`;
+}
 function runConv(){
   const amtEl=$("#cvAmt"); if(!amtEl) return;
   const amt=+amtEl.value||0, from=$("#cvFrom").value, to=$("#cvTo").value, out=$("#cvOut");
@@ -1271,6 +1341,22 @@ function renderPlan(){
   }
 }
 function setDay(i){ curDay = i; window._scrollPlan=true; renderPlan(); }
+function refreshNowState(){
+  if(curView!=="plan" || window._dragActive) return;
+  const items=dayItems(curDay);
+  const isToday = dayDate(curDay).toDateString()===pqToday().toDateString();
+  const nmin=pqNowMin();
+  let nowId=null;
+  if(isToday){ for(const it of items){ let e=toMin(it.endTime)!=null?toMin(it.endTime):toMin(it.startTime);
+    if(e!=null&&it.endNextDay)e+=1440; if(e!=null&&e<nmin) continue; nowId=it.id; break; } }
+  document.querySelectorAll("#view-plan .timeline .titem").forEach(el=>{
+    const it=items.find(x=>x.id===el.dataset.id); if(!it) return;
+    let e=toMin(it.endTime)!=null?toMin(it.endTime):toMin(it.startTime); if(e!=null&&it.endNextDay)e+=1440;
+    el.classList.toggle("past", isToday&&e!=null&&e<nmin);
+    el.classList.toggle("now", isToday&&it.id===nowId);
+  });
+}
+setInterval(refreshNowState, 60000);
 
 /* ---------- 꾹 눌러 순서 변경 (롱프레스 드래그) ---------- */
 function bindPlanDrag(){
@@ -1345,7 +1431,7 @@ function tItem(i, idx, len, isToday, nowId, nmin){
   if(endM!=null && i.endNextDay) endM += 1440;
   const past = isToday && endM!=null && endM < nmin;
   const isNow = isToday && i.id===nowId;
-  const stClass = `${i.status==="완료"?"done":""} ${past?"past":""} ${isNow?"now":""}`;
+  const stClass = `${past?"past":""} ${isNow?"now":""}`;
   const myR = i.reactions?.[meId];
   const rCount = e => Object.values(i.reactions||{}).filter(x=>x===e).length;
   const rTotal = Object.values(i.reactions||{}).length;
@@ -1366,9 +1452,9 @@ function tItem(i, idx, len, isToday, nowId, nmin){
         <button class="icon-btn" style="flex-shrink:0" onclick="openForm('${i.id}')">✏️</button>
       </div>
       <div class="meta">
-        ${isNow?`<span class="badge" style="background:#FFE7DE;color:var(--coral-dark)">⏰ 다음 일정</span>`:""}
-        ${past&&i.status!=="완료"?`<span class="badge done">🕐 지남</span>`:""}
-        ${i.status==="완료"?`<span class="badge done">✔ 완료</span>`:""}
+        ${isNow?`<span class="badge" style="background:#FFE7DE;color:var(--coral-dark)">🔴 진행 중·다음</span>`:""}
+        ${past?`<span class="badge done">🕐 지난 시간</span>`:""}
+        ${i.status==="완료"?`<span class="badge" style="background:var(--teal-light);color:var(--teal-dark)">💸 지출 반영</span>`:""}
         <button class="fold" onclick="toggleFold('${i.id}')">${open?"▴ 접기":"▾ 자세히"}<span class="cnts">${cnts}</span></button>
       </div>
       ${open?`
@@ -2524,29 +2610,23 @@ function renderPack(){
     </div>
     ${others.map(x=>`<div class="card"><div class="sec-title">${x.m.emoji} ${esc(x.m.nickname)} ${noun}</div>${x.list.map(row).join("")}</div>`).join("")}
     <div class="card">
-      <div class="sec-title">💡 ${isShop?"쇼핑리스트":"준비물"} 추천</div>
-      <div class="reco" id="recoBox"></div>
+      <div class="sec-title">💡 ${isShop?"쇼핑리스트":"준비물"} 추천 <small>탭하면 담겨요</small></div>
+      <div class="reco-chips" id="recoBox"></div>
     </div>
     <div style="height:60px"></div>`;
   renderReco();
-  clearInterval(window._recoTimer);
-  window._recoTimer=setInterval(()=>{
-    const el=$("#recoTxt"); if(!el){ clearInterval(window._recoTimer); return; }
-    recoIdx=(recoIdx+1)%1000;
-    el.style.opacity=0;
-    setTimeout(()=>{ const pool=curRecoPool(); el.textContent=pool[recoIdx%pool.length]; el.style.opacity=1; },300);
-  }, 10000);
 }
-let recoIdx = 0;
 function curRecoPool(){ return listView==="shop"?SHOP_RECO:PACK_RECO; }
 function renderReco(){
   const box=$("#recoBox"); if(!box) return;
   const pool=curRecoPool();
-  box.innerHTML=`<div class="reco-txt" id="recoTxt" style="transition:opacity .3s;flex:1;min-width:0">${pool[recoIdx%pool.length]}</div>
-    <button class="btn-mini" onclick="addReco()">➕ 담기</button>`;
+  const have=new Set(S.pack.filter(p=>(p.kind||"pack")===listView).map(p=>p.text));
+  box.innerHTML=pool.map((t,i)=> have.has(t)
+    ? `<span class="reco-chip done">${t} ✓</span>`
+    : `<button class="reco-chip" onclick="addReco(${i})">${t} ＋</button>`).join("");
 }
-function addReco(){
-  const pool=curRecoPool(); const txt=pool[recoIdx%pool.length];
+function addReco(i){
+  const pool=curRecoPool(); const txt=pool[i]; if(!txt) return;
   const p={id:"p"+Date.now()+Math.floor(Math.random()*1e3), text:txt, owner:null, done:false, createdBy:meId, kind:listView};
   S.pack.push(p);
   addFeed(`${listView==="shop"?"쇼핑리스트":"준비물"}에 '${txt}'을(를) 추가했어요 ${listView==="shop"?"🛍️":"🎒"}`);
