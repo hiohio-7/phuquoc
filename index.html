@@ -270,6 +270,9 @@ textarea.f-input{resize:vertical; min-height:64px}
 .conv2 span{flex-shrink:0; font-weight:800; color:var(--ink-soft)}
 .cvOut{margin-top:8px; text-align:right; font-weight:700; color:var(--ink-soft); min-height:1.2em; font-size:.95rem}
 .cvOut b{color:var(--coral-dark); font-size:1.05rem}
+.reco{display:flex; align-items:center; gap:10px; background:var(--teal-light); border-radius:12px; padding:11px 13px}
+.reco-txt{font-weight:800; font-size:.92rem; color:var(--teal-dark)}
+button.stat{font-family:inherit}
 .hourly{max-height:56vh; overflow-y:auto}
 .hr{display:flex; align-items:center; gap:12px; padding:9px 4px; border-bottom:1px dashed var(--line)}
 .hr:last-child{border-bottom:none}
@@ -400,7 +403,7 @@ textarea.f-input{resize:vertical; min-height:64px}
 
 <main id="view-home" class="view"></main>
 <main id="view-plan" class="view hidden"></main>
-<main id="view-map" class="view hidden"></main>
+<main id="view-expense" class="view hidden"></main>
 <main id="view-pack" class="view hidden"></main>
 <main id="view-family" class="view hidden"></main>
 
@@ -409,7 +412,7 @@ textarea.f-input{resize:vertical; min-height:64px}
 <nav class="tabbar" id="tabbar">
   <button class="tab active" data-v="home"><span class="ico">🏠</span><span class="lb">홈</span></button>
   <button class="tab" data-v="plan"><span class="ico">📅</span><span class="lb">일정</span></button>
-  <button class="tab" data-v="map"><span class="ico">🗺️</span><span class="lb">지도</span></button>
+  <button class="tab" data-v="expense"><span class="ico">💰</span><span class="lb">경비</span></button>
   <button class="tab" data-v="pack"><span class="ico">🧾</span><span class="lb">리스트</span></button>
   <button class="tab" data-v="family"><span class="ico">👥</span><span class="lb">멤버</span></button>
 </nav>
@@ -436,7 +439,7 @@ const CATS = {
   "이동":{e:"🚕",bg:"#FFF6D9"}, "액티비티":{e:"🤿",bg:"#E4F2FB"},
   "쇼핑":{e:"🛍️",bg:"#FBEAF3"}, "기타":{e:"📌",bg:"#EFEFEA"},
 };
-const TRANSPORT = {car:{e:"🚗",n:"자동차"}, taxi:{e:"🚕",n:"택시"}, bus:{e:"🚌",n:"버스"}, subway:{e:"🚇",n:"지하철"}, flight:{e:"✈️",n:"비행기"}};
+const TRANSPORT = {car:{e:"🚗",n:"자동차"}, taxi:{e:"🚕",n:"택시"}, bus:{e:"🚌",n:"버스"}, subway:{e:"🚇",n:"지하철"}, train:{e:"🚆",n:"기차"}, flight:{e:"✈️",n:"비행기"}};
 function itemEmoji(i){
   if(i && i.category==="이동" && i.transport && TRANSPORT[i.transport]) return TRANSPORT[i.transport].e;
   return (CATS[(i&&i.category)]||CATS["기타"]).e;
@@ -483,7 +486,24 @@ const KKOU_TIPS = [
   "선크림은 <b>2시간마다</b> 덧바르기! 동남아 자외선은 생각보다 강해요 ☀️",
   "향신료가 안 맞을 수 있으니 <b>지사제·소화제</b>는 손가방에 챙겨요 💊",
   "기념품은 <b>후추·캐슈넛·코코넛 캔디</b>가 인기 — 마지막 날 야시장이 찬스 🛍️",
+  "한국인은 <b>무비자 45일</b> 체류 가능 — 여권 유효기간 6개월 이상인지 확인하세요 🛂",
+  "푸꾸옥은 한국보다 <b>2시간 느려요</b>(현지 오후 3시 = 한국 오후 5시) 🕐",
+  "오후엔 <b>스콜(소나기)</b>이 자주 와요. 접이식 우산 하나면 든든해요 ☂️",
+  "택시는 <b>비나선(Vinasun)·마이린(Mailinh)</b>이 정직해요. 미터기 확인! 🚕",
+  "물놀이 전엔 <b>귀중품·여권</b>은 방수팩에. 해변 도난도 조심하세요 👜",
+  "식당 계산 전 <b>영수증</b> 확인하고, 팁은 의무가 아니에요(성의 표시 정도) 🧾",
+  "모기가 있어요 — <b>모기 기피제</b>와 물린 데 바르는 약을 챙기면 좋아요 🦟",
+  "해산물은 <b>당일 시세</b>로 파는 곳이 많아요. 주문 전 kg당 가격을 확인하세요 🦐",
+  "산호·바다거북을 위해 <b>산호에 안전한 선크림</b>을 쓰면 더 좋아요 🐢",
 ];
+/* ---------- 준비물·쇼핑 추천 (리스트 탭에서 순환) ---------- */
+const PACK_RECO = ["🕶️ 선글라스","🧴 선크림 SPF50","🩴 아쿠아슈즈·슬리퍼","🏊 수영복·래시가드","🧢 모자",
+  "☂️ 접이식 우산(스콜 대비)","🦟 모기 기피제","🔋 보조배터리","💊 상비약(지사제·멀미약)","🩹 밴드·소독약",
+  "🧻 물티슈·휴대 티슈","👕 얇은 긴팔(냉방·햇빛 가리개)","🔌 충전 케이블","🛂 여권 사본·사진","💵 달러 현금",
+  "🤿 스노클링 장비","🧳 압축팩","💧 휴대용 물통","👶 아이 상비약·간식","🧦 기내 목베개"];
+const SHOP_RECO = ["🌶️ 푸꾸옥 후추","🥜 캐슈넛","🍬 코코넛 캔디","🥭 건망고","☕ G7 커피·콩카페 원두",
+  "🐟 느억맘(피시소스)","🍜 라이스페이퍼","🧴 마사지 오일","🧣 실크·린넨 스카프","🦪 진주 액세서리",
+  "🧺 라탄백","🥥 코코넛 그릇·수공예품","🍵 연꽃차","🧼 수제 비누","🍫 열대과일 젤리","🧂 소금·라임 시즈닝"];
 
 /* ---------- 데모 데이터 ---------- */
 function demoData(){
@@ -728,7 +748,7 @@ document.querySelectorAll(".tab").forEach(b=>{
   b.onclick = ()=>{
     curView = b.dataset.v;
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t===b));
-    ["home","plan","map","pack","family"].forEach(v=>{
+    ["home","plan","expense","pack","family"].forEach(v=>{
       $("#view-"+v).classList.toggle("hidden", v!==curView);
     });
     $("#fab").classList.toggle("hidden", !(curView==="home"||curView==="plan"));
@@ -784,40 +804,6 @@ function renderHome(){
   const tip = over ? "여행 다녀오느라 고생했어요! 아래 <b>추억 앨범</b>에 한 줄씩 남겨봐요 ✍️"
     : KKOU_TIPS[(window._tipIdx==null ? (window._tipIdx=new Date().getDate()%KKOU_TIPS.length) : window._tipIdx)];
 
-  /* ---- 경비 카드 (예상 + 실제 지출) ---- */
-  const catTotals = Object.keys(CATS)
-    .map(k=>({k, v:S.items.reduce((a,i)=>a+(i.category===k?itemKrw(i):0),0)}))
-    .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
-  const expK = Math.round(catTotals.reduce((a,x)=>a+x.v,0));
-  const paid = S.items.filter(i=>i.status==="완료" && (+i.cost||0)>0)
-    .sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  const spent = S.items.reduce((a,i)=>a+(i.status==="완료"?itemKrw(i):0),0);
-  const pct = expK ? Math.min(999, Math.round(spent/expK*100)) : 0;
-  const expCard = `
-    <div class="card">
-      <div class="sec-title">💰 우리 여행 경비</div>
-      <div class="spent-sum">
-        <div class="stat"><div class="num">${expK?(expK/10000).toFixed(0)+"만원":"—"}</div><div class="lbl">예상 경비 (일정 합계)</div></div>
-        <div class="stat"><div class="num sp">${(spent/10000).toFixed(1)}만원</div><div class="lbl">현재까지 씀 · 완료 ${paid.length}건</div></div>
-      </div>
-      ${expK?`<div class="prog"><div style="width:${Math.min(pct,100)}%;background:linear-gradient(90deg,var(--teal),var(--teal-dark))"></div></div>
-      <div class="map-note">예상 경비의 ${pct}%를 썼어요 (완료한 일정 기준)</div>`:""}
-      ${catTotals.length?`<div style="margin-top:10px">${catTotals.map(x=>`
-        <div class="costbar">
-          <span class="lbl2">${CATS[x.k].e} ${x.k}</span>
-          <div class="track"><div class="fill" style="width:${Math.round(x.v/catTotals[0].v*100)}%"></div></div>
-          <span class="val">${(x.v/10000).toFixed(1)}만원</span>
-        </div>`).join("")}</div>`:""}
-      ${paid.length?`<div style="margin-top:10px"><div class="lbl2" style="margin-bottom:4px">✔ 쓴 내역 (완료한 일정)</div>${paid.slice(0,4).map(i=>{
-        const krw=Math.round(itemKrw(i));
-        return `<div class="exp-row">
-          <span class="et">${itemEmoji(i)} ${esc(i.title)}</span>
-          <span class="ev">${krw.toLocaleString("ko-KR")}원${i.costCur==="₫"?`<small style="color:var(--ink-soft);font-weight:600"> (${fmtVnd(i.cost)})</small>`:""}</span>
-        </div>`;
-      }).join("")}${paid.length>4?`<div class="map-note" style="margin-top:4px">외 ${paid.length-4}건 더 (일정 탭에서 확인)</div>`:""}</div>`:""}
-      <div class="imp-hint" style="margin-top:10px">💡 지출을 따로 적지 않아도 돼요! 일정에 <b>예상 비용</b>을 넣고, 실제로 쓰면 그 일정을 <b>'완료'로 표시</b>하면 여기 '현재까지 씀'에 자동으로 더해져요. (일정 카드 → ▾ 자세히 → 💸 완료로 표시)</div>
-    </div>`;
-
   /* ---- 추억 앨범 (여행 종료 후) ---- */
   const memCard = !over ? "" : `
     <div class="card">
@@ -857,7 +843,6 @@ function renderHome(){
       <div id="nearBox"><div class="imp-hint" style="margin-top:0">여행 중 배고플 때! 아래 버튼을 누르고 위치 사용에 동의하면, <b>주변 3km</b>의 음식점을 찾아 <b>구글지도</b>(평점·리뷰)로 연결해드려요.</div></div>
       <button class="btn-primary" style="margin-top:10px" onclick="findNearby()">📍 현재 위치로 주변 음식점 찾기</button>
     </div>
-    ${expCard}
     <div class="card">
       <div class="sec-title">💱 오늘 환율 <small>실시간</small></div>
       <div id="fxBox"><div class="empty">불러오는 중…</div></div>
@@ -1275,8 +1260,10 @@ function renderPlan(){
       : `<div class="placeholder"><span class="big">🌊</span><h3>DAY ${curDay+1}은 아직 비어있어요</h3><p>＋ 버튼으로 직접 추가하거나<br>구글지도 링크·메모를 붙여넣어 가져와보세요!</p>
         <button class="stage-badge" style="border:none;cursor:pointer" onclick="openImport()">📥 일정 가져오기</button></div>`}
     ${items.length?`<div class="map-note">카드를 <b>꾹 눌러 위아래로 끌면</b> 순서가 바뀌어요</div>`:""}
+    <div class="card" style="margin-top:6px"><div class="sec-title">🗺️ 동선 보기</div><div id="planMapHost"></div></div>
     <div style="height:70px"></div>`;
   bindPlanDrag();
+  mapDay = curDay; renderMap();
   const _at=document.querySelector("#view-plan .day-tab.active"); if(_at) _at.scrollIntoView({inline:"center",block:"nearest"});
   if(window._scrollPlan){
     window._scrollPlan=false;
@@ -2195,7 +2182,62 @@ function loadLeaflet(){
   return loadLeaflet._p;
 }
 
+function renderExpense(){
+  const catTotals = Object.keys(CATS)
+    .map(k=>({k, v:S.items.reduce((a,i)=>a+(i.category===k?itemKrw(i):0),0)}))
+    .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const expK = Math.round(catTotals.reduce((a,x)=>a+x.v,0));
+  const spent = S.items.reduce((a,i)=>a+(i.status==="완료"?itemKrw(i):0),0);
+  const paidN = S.items.filter(i=>i.status==="완료"&&(+i.cost||0)>0).length;
+  const estN = S.items.filter(i=>(+i.cost||0)>0).length;
+  const pct = expK ? Math.min(999, Math.round(spent/expK*100)) : 0;
+  $("#view-expense").innerHTML = `
+    <div class="card">
+      <div class="sec-title">💰 우리 여행 경비</div>
+      <div class="spent-sum">
+        <button class="stat" style="cursor:pointer;border:none" onclick="openCostList('est')"><div class="num">${expK?(expK/10000).toFixed(0)+"만원":"—"}</div><div class="lbl">예상 경비 · ${estN}건 ›</div></button>
+        <button class="stat" style="cursor:pointer;border:none" onclick="openCostList('spent')"><div class="num sp">${(spent/10000).toFixed(1)}만원</div><div class="lbl">현재까지 씀 · ${paidN}건 ›</div></button>
+      </div>
+      ${expK?`<div class="prog"><div style="width:${Math.min(pct,100)}%;background:linear-gradient(90deg,var(--teal),var(--teal-dark))"></div></div>
+      <div class="map-note">예상 경비의 ${pct}%를 썼어요 (완료한 일정 기준) · 위 숫자를 누르면 내역이 나와요</div>`:`<div class="empty">일정에 예상 비용을 넣으면 여기에 경비가 모여요</div>`}
+    </div>
+    ${catTotals.length?`<div class="card"><div class="sec-title">📊 카테고리별 예상 경비</div>${catTotals.map(x=>`
+      <div class="costbar">
+        <span class="lbl2">${CATS[x.k].e} ${x.k}</span>
+        <div class="track"><div class="fill" style="width:${Math.round(x.v/catTotals[0].v*100)}%"></div></div>
+        <span class="val">${(x.v/10000).toFixed(1)}만원</span>
+      </div>`).join("")}</div>`:""}
+    <div class="card">
+      <div class="imp-hint" style="margin-top:0">💡 <b>예상 경비</b>는 일정에 적어둔 예상 비용의 합이에요. 실제로 돈을 쓰면 그 일정을 <b>'완료'로 표시</b>하면 <b>현재까지 씀</b>에 자동으로 더해져요. (일정 카드 → ▾ 자세히 → 💸 지출 반영)</div>
+    </div>
+    <div style="height:60px"></div>`;
+}
+function openCostList(kind){
+  const spentMode = kind==="spent";
+  const list = S.items.filter(i=>(+i.cost||0)>0 && (spentMode? i.status==="완료" : true))
+    .sort((a,b)=>(a.dayIndex-b.dayIndex)||(a.order-b.order));
+  const total = Math.round(list.reduce((a,i)=>a+itemKrw(i),0));
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>${spentMode?"✅ 현재까지 쓴 경비":"💰 예상 경비 내역"}<button class="x" onclick="closeModal()">✕</button></h2>
+      ${list.length? list.map(i=>{
+        const krw=Math.round(itemKrw(i));
+        return `<div class="exp-row">
+          <span class="when">D${i.dayIndex+1}</span>
+          <span class="et">${itemEmoji(i)} ${esc(i.title)}${i.status==="완료"&&!spentMode?' <span style="color:var(--teal-dark);font-weight:800">✔</span>':""}</span>
+          <span class="ev">${krw.toLocaleString("ko-KR")}원${i.costCur==="₫"?`<small style="color:var(--ink-soft);font-weight:600"> (${fmtVnd(i.cost)})</small>`:""}</span>
+        </div>`;
+      }).join("") : `<div class="empty">${spentMode?"아직 완료로 표시한 일정이 없어요":"예상 비용을 적은 일정이 없어요"}</div>`}
+      ${list.length?`<div class="exp-row" style="border-top:2px solid var(--line);margin-top:6px;font-weight:800">
+        <span class="et">합계</span><span class="ev" style="color:var(--coral-dark)">${total.toLocaleString("ko-KR")}원</span></div>`:""}
+      ${spentMode?`<div class="map-note" style="margin-top:8px">일정을 '완료'로 표시하면 여기에 쌓여요</div>`:`<div class="map-note" style="margin-top:8px">✔ 표시는 이미 완료(지출 반영)된 일정이에요</div>`}
+    </div>
+  </div>`;
+}
+const MAP_HOST = "#planMapHost";
 function renderMap(){
+  if(!document.querySelector(MAP_HOST)) return;
   stopAnim();
   const n = dayCount();
   let chips = `<button class="mchip2 ${mapDay===-1?"active":""}" onclick="setMapDay(-1)">🌍 전체</button>`;
@@ -2257,7 +2299,7 @@ function renderMap(){
     </div>
     <div class="play-now" id="playNow">▶를 누르면 하루 동선을 시간순으로 재생해요</div>` : "";
 
-  $("#view-map").innerHTML = `
+  $(MAP_HOST).innerHTML = `
     <div class="map-chips">${chips}</div>
     <div id="mapBox"></div>
     <div class="map-note" id="mapNote"></div>
@@ -2450,7 +2492,7 @@ function renderPack(){
       <button class="del" onclick="delPack('${p.id}')">✕</button>
     </div>`;
   };
-  const noun = isShop?"살 것":"준비물";
+  const noun = isShop?"쇼핑리스트":"준비물";
   $("#view-pack").innerHTML = `
     <div class="seg" style="margin:2px 2px 12px">
       <button class="${kind==='pack'?'sel':''}" onclick="setListView('pack')">🎒 준비물</button>
@@ -2481,7 +2523,34 @@ function renderPack(){
       ${mine.length?mine.map(row).join(""):`<div class="empty">위에서 담당을 '${me?esc(me.nickname):"나"}'로 골라 추가해보세요</div>`}
     </div>
     ${others.map(x=>`<div class="card"><div class="sec-title">${x.m.emoji} ${esc(x.m.nickname)} ${noun}</div>${x.list.map(row).join("")}</div>`).join("")}
+    <div class="card">
+      <div class="sec-title">💡 ${isShop?"쇼핑리스트":"준비물"} 추천</div>
+      <div class="reco" id="recoBox"></div>
+    </div>
     <div style="height:60px"></div>`;
+  renderReco();
+  clearInterval(window._recoTimer);
+  window._recoTimer=setInterval(()=>{
+    const el=$("#recoTxt"); if(!el){ clearInterval(window._recoTimer); return; }
+    recoIdx=(recoIdx+1)%1000;
+    el.style.opacity=0;
+    setTimeout(()=>{ const pool=curRecoPool(); el.textContent=pool[recoIdx%pool.length]; el.style.opacity=1; },300);
+  }, 10000);
+}
+let recoIdx = 0;
+function curRecoPool(){ return listView==="shop"?SHOP_RECO:PACK_RECO; }
+function renderReco(){
+  const box=$("#recoBox"); if(!box) return;
+  const pool=curRecoPool();
+  box.innerHTML=`<div class="reco-txt" id="recoTxt" style="transition:opacity .3s;flex:1;min-width:0">${pool[recoIdx%pool.length]}</div>
+    <button class="btn-mini" onclick="addReco()">➕ 담기</button>`;
+}
+function addReco(){
+  const pool=curRecoPool(); const txt=pool[recoIdx%pool.length];
+  const p={id:"p"+Date.now()+Math.floor(Math.random()*1e3), text:txt, owner:null, done:false, createdBy:meId, kind:listView};
+  S.pack.push(p);
+  addFeed(`${listView==="shop"?"쇼핑리스트":"준비물"}에 '${txt}'을(를) 추가했어요 ${listView==="shop"?"🛍️":"🎒"}`);
+  syncPack(p); renderPack(); toast("추천을 담았어요!");
 }
 function togglePack(id){
   const p=S.pack.find(x=>x.id===id); if(!p) return;
@@ -2751,7 +2820,7 @@ function renderAll(){
   renderHeader();
   if(curView==="home") renderHome();
   if(curView==="plan") renderPlan();
-  if(curView==="map") renderMap();
+  if(curView==="expense") renderExpense();
   if(curView==="pack") renderPack();
   if(curView==="family") renderFamily();
 }
