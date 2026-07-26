@@ -868,7 +868,7 @@ function renderHome(){
     <div class="kkou"><div class="face">🥥</div><div class="bubble" id="kkouTip" style="transition:opacity .3s">${tip}</div></div>
     ${memCard}
     ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
-    <div class="card" id="feedCard">
+    <div class="card">
       <div class="sec-title">🔔 최근 소식 <small>${S.feed.length}건</small><button class="more-btn" onclick="openFeedAll()">더보기 ›</button></div>
       ${feedPageItems.length ? feedPageItems.map(f=>{
         const m = member(f.who)||{emoji:"👤",nickname:"멤버"};
@@ -882,11 +882,6 @@ function renderHome(){
       <div class="sec-title">🏝️ 푸꾸옥 여행 정보</div>
       <div class="imp-hint" style="margin-top:0">명소·해변·유적지·맛집 추천 모음 — 마음에 들면 그 자리에서 바로 일정에 추가할 수 있어요!</div>
       <button class="btn-primary" style="margin-top:10px;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openGuide()">🏝️ 추천 여행 정보 보기</button>
-    </div>
-    <div class="card">
-      <div class="sec-title">🏨 숙소 정보</div>
-      <div id="lodgingBox"></div>
-      <button class="btn-primary" style="margin-top:10px" onclick="openLodging()">➕ 숙소 등록하기</button>
     </div>
     <div class="card">
       <div class="sec-title">🍜 내 주변 맛집</div>
@@ -926,8 +921,6 @@ function renderHome(){
   }
   if(!over) loadWeather();
   loadFx();
-  renderLodging();
-  attachFeedSwipe();
 }
 
 /* ---------- 지출 기록 ---------- */
