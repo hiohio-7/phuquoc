@@ -271,6 +271,14 @@ textarea.f-input{resize:vertical; min-height:64px}
 .reco-txt{font-weight:800; font-size:.92rem; color:var(--teal-dark)}
 .more-btn{margin-left:auto; font-size:.76rem; font-weight:800; color:var(--teal-dark); background:var(--teal-light); border-radius:999px; padding:5px 11px; flex-shrink:0}
 .reco-chips{display:flex; flex-wrap:wrap; gap:7px}
+.lg-card{background:var(--cream); border-radius:12px; padding:12px; margin-bottom:8px}
+.lg-top{display:flex; align-items:center; gap:8px}
+.lg-name{font-weight:800; font-size:1rem}
+.lg-sub{font-size:.82rem; color:var(--ink-soft); margin-top:3px}
+.lg-memo{font-size:.85rem; background:#fff; border-radius:8px; padding:7px 10px; margin-top:8px; white-space:pre-wrap}
+.lg-links{display:flex; flex-wrap:wrap; gap:7px; margin-top:9px}
+.lg-link{background:#fff; border:1.5px solid var(--teal); color:var(--teal-dark); border-radius:999px; padding:6px 11px; font-size:.8rem; font-weight:800; text-decoration:none}
+.lg-link:active{background:var(--teal-light)}
 .reco-chip{border:1.5px solid var(--teal); background:var(--teal-light); color:var(--teal-dark); border-radius:999px; padding:7px 12px; font-size:.84rem; font-weight:700; line-height:1.1}
 .reco-chip:active{transform:scale(.95)}
 .reco-chip.done{border-color:var(--line); background:var(--cream); color:var(--ink-soft)}
@@ -594,7 +602,13 @@ function demoData(){
     {id:"e1", title:"왕복 항공권 (4인)", amt:1600000, cur:"₩", category:"이동", when:"여행 전", ts:Date.now()-86400e3*3, by:"m1"},
     {id:"e2", title:"호텔 예약금", amt:450000, cur:"₩", category:"숙소", when:"여행 전", ts:Date.now()-86400e3*2, by:"m2"},
   ];
-  return { trip, items, pack, expenses, diary:{}, feed:[
+  const lodging = [
+    {id:"L1", name:"윈덤 그랜드 푸꾸옥", address:"Grand World, Ganh Dau, Phu Quoc",
+     checkin:"2026-12-23", checkout:"2026-12-27", phone:"+84 297 3626 888",
+     homepage:"wyndhamgrandphuquoc.com", instagram:"@wyndhamgrandphuquoc", booking:"",
+     memo:"조식 6:30~10:00 · 수영장 24시간 · 셔틀 매시 정각", by:"m1"},
+  ];
+  return { trip, items, pack, expenses, lodging, diary:{}, feed:[
     {who:"m3", txt:"'선셋타운 키스교 불쇼' 일정을 추가했어요", ts:Date.now()-3600e3},
     {who:"m2", txt:"'가족 스파 타임' 일정을 추가했어요", ts:Date.now()-7200e3},
     {who:"m1", txt:"'푸꾸옥 진주농장'을 후보로 올렸어요", ts:Date.now()-10800e3},
@@ -624,6 +638,7 @@ function load(){
         if(!d.pack) d.pack = [];
         if(!d.diary) d.diary = {};
         if(!d.expenses) d.expenses = [];
+        if(!d.lodging) d.lodging = [];
         return migrate(d);
       }
     }
@@ -796,6 +811,19 @@ function renderHeader(){
 let homeDay = null;
 let feedPage = 0;
 function setFeedPage(p){ feedPage=p; renderHome(); }
+function attachFeedSwipe(){
+  const el=$("#feedCard"); if(!el || el._sw) return; el._sw=true;
+  let sx=0, sy=0, act=false;
+  el.addEventListener("pointerdown", e=>{ sx=e.clientX; sy=e.clientY; act=true; });
+  el.addEventListener("pointerup", e=>{
+    if(!act) return; act=false;
+    const dx=e.clientX-sx, dy=e.clientY-sy;
+    if(Math.abs(dx)<45 || Math.abs(dx)<Math.abs(dy)*1.5) return;  // 가로 스와이프만
+    const pages=Math.max(1, Math.ceil(S.feed.length/3));
+    if(dx<0 && feedPage<pages-1) setFeedPage(feedPage+1);        // 왼쪽으로 → 다음
+    else if(dx>0 && feedPage>0) setFeedPage(feedPage-1);         // 오른쪽으로 → 이전
+  });
+}
 function homeDefaultDay(){
   const s = new Date(S.trip.startDate+"T00:00:00");
   const today = pqToday();
@@ -840,7 +868,7 @@ function renderHome(){
     <div class="kkou"><div class="face">🥥</div><div class="bubble" id="kkouTip" style="transition:opacity .3s">${tip}</div></div>
     ${memCard}
     ${over?"":`<div class="card"><div class="sec-title">🌤️ 여행 날씨</div><div id="wxBox"><div class="empty">불러오는 중…</div></div></div>`}
-    <div class="card">
+    <div class="card" id="feedCard">
       <div class="sec-title">🔔 최근 소식 <small>${S.feed.length}건</small><button class="more-btn" onclick="openFeedAll()">더보기 ›</button></div>
       ${feedPageItems.length ? feedPageItems.map(f=>{
         const m = member(f.who)||{emoji:"👤",nickname:"멤버"};
@@ -851,13 +879,14 @@ function renderHome(){
       </div>`:""}
     </div>
     <div class="card">
-      <div class="sec-title">📰 푸꾸옥·베트남 여행 소식<button class="more-btn" onclick="openNewsAll()">더보기 ›</button></div>
-      <div id="newsBox"><div class="empty">불러오는 중…</div></div>
-    </div>
-    <div class="card">
       <div class="sec-title">🏝️ 푸꾸옥 여행 정보</div>
       <div class="imp-hint" style="margin-top:0">명소·해변·유적지·맛집 추천 모음 — 마음에 들면 그 자리에서 바로 일정에 추가할 수 있어요!</div>
       <button class="btn-primary" style="margin-top:10px;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openGuide()">🏝️ 추천 여행 정보 보기</button>
+    </div>
+    <div class="card">
+      <div class="sec-title">🏨 숙소 정보</div>
+      <div id="lodgingBox"></div>
+      <button class="btn-primary" style="margin-top:10px" onclick="openLodging()">➕ 숙소 등록하기</button>
     </div>
     <div class="card">
       <div class="sec-title">🍜 내 주변 맛집</div>
@@ -897,7 +926,8 @@ function renderHome(){
   }
   if(!over) loadWeather();
   loadFx();
-  loadNews();
+  renderLodging();
+  attachFeedSwipe();
 }
 
 /* ---------- 지출 기록 ---------- */
@@ -1109,6 +1139,79 @@ function saveTripSettings(){
 }
 
 /* ---------- 내장 사용설명서 ---------- */
+function normUrl(u){ u=(u||"").trim(); if(!u) return ""; if(/^https?:\/\//i.test(u)) return u; return "https://"+u.replace(/^\/+/,""); }
+function igUrl(u){ u=(u||"").trim(); if(!u) return ""; if(/^https?:\/\//i.test(u)) return u;
+  const h=u.replace(/^@/,"").replace(/^instagram\.com\//i,""); return "https://instagram.com/"+h; }
+function renderLodging(){
+  const box=$("#lodgingBox"); if(!box) return;
+  if(!S.lodging.length){ box.innerHTML=`<div class="imp-hint" style="margin-top:0">예약한 숙소를 등록하면 홈페이지·인스타그램·조식/수영장 등 호텔 프로그램을 한 번에 볼 수 있어요.</div>`; return; }
+  box.innerHTML=S.lodging.map(l=>{
+    const links=[];
+    if(l.homepage) links.push(`<a class="lg-link" href="${esc(normUrl(l.homepage))}" target="_blank" rel="noopener">🌐 홈페이지</a>`);
+    if(l.instagram) links.push(`<a class="lg-link" href="${esc(igUrl(l.instagram))}" target="_blank" rel="noopener">📷 인스타</a>`);
+    if(l.booking) links.push(`<a class="lg-link" href="${esc(normUrl(l.booking))}" target="_blank" rel="noopener">🧾 예약</a>`);
+    if(l.address) links.push(`<a class="lg-link" href="https://www.google.com/maps/search/${encodeURIComponent(l.address+" Phu Quoc")}" target="_blank" rel="noopener">🗺️ 지도</a>`);
+    if(l.phone) links.push(`<a class="lg-link" href="tel:${esc(l.phone)}">📞 전화</a>`);
+    const dates=[l.checkin,l.checkout].filter(Boolean);
+    return `<div class="lg-card">
+      <div class="lg-top"><div class="lg-name">🏨 ${esc(l.name)}</div><button class="icon-btn" style="flex-shrink:0" onclick="openLodging('${l.id}')">✏️</button></div>
+      ${dates.length?`<div class="lg-sub">📅 ${esc(l.checkin||"?")} → ${esc(l.checkout||"?")}</div>`:""}
+      ${l.address?`<div class="lg-sub">📍 ${esc(l.address)}</div>`:""}
+      ${l.memo?`<div class="lg-memo">${esc(l.memo)}</div>`:""}
+      ${links.length?`<div class="lg-links">${links.join("")}</div>`:""}
+    </div>`;
+  }).join("");
+}
+let lodgeForm=null;
+function openLodging(id){
+  const edit = id ? S.lodging.find(x=>x.id===id) : null;
+  lodgeForm = edit ? JSON.parse(JSON.stringify(edit)) : {id:null,name:"",checkin:"",checkout:"",address:"",phone:"",homepage:"",instagram:"",booking:"",memo:""};
+  const f=lodgeForm;
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>🏨 숙소 ${edit?"수정":"등록"}<button class="x" onclick="closeModal()">✕</button></h2>
+      <label class="f-label">숙소 이름 *</label>
+      <input class="f-input" id="lgName" maxlength="40" value="${esc(f.name)}" placeholder="예: 윈덤 그랜드 푸꾸옥">
+      <div class="f-row">
+        <div><label class="f-label">체크인</label><input class="f-input" type="date" id="lgIn" value="${f.checkin||""}"></div>
+        <div><label class="f-label">체크아웃</label><input class="f-input" type="date" id="lgOut" value="${f.checkout||""}"></div>
+      </div>
+      <label class="f-label">주소</label>
+      <input class="f-input" id="lgAddr" value="${esc(f.address)}" placeholder="구글지도 검색용 주소·이름">
+      <label class="f-label">전화번호</label>
+      <input class="f-input" id="lgPhone" value="${esc(f.phone)}" placeholder="+84 ...">
+      <label class="f-label">🌐 홈페이지</label>
+      <input class="f-input" id="lgHome" value="${esc(f.homepage)}" placeholder="wyndhamphuquoc.com">
+      <label class="f-label">📷 인스타그램</label>
+      <input class="f-input" id="lgIg" value="${esc(f.instagram)}" placeholder="@아이디 또는 링크">
+      <label class="f-label">🧾 예약 확인 링크 (선택)</label>
+      <input class="f-input" id="lgBook" value="${esc(f.booking)}" placeholder="아고다·부킹닷컴 예약 링크">
+      <label class="f-label">메모 (조식 시간·수영장·셔틀 등)</label>
+      <textarea class="f-input" id="lgMemo" style="min-height:60px" placeholder="호텔 프로그램·이용 안내">${esc(f.memo)}</textarea>
+      <button class="btn-primary" onclick="saveLodging()">${edit?"수정 저장":"등록하기"} 🏨</button>
+      ${edit?`<button class="btn-danger-line" onclick="delLodging('${edit.id}')">🗑 이 숙소 삭제</button>`:""}
+    </div>
+  </div>`;
+  setTimeout(()=>$("#lgName").focus(),250);
+}
+function saveLodging(){
+  const name=$("#lgName").value.trim();
+  if(!name){ $("#lgName").style.borderColor="var(--danger)"; $("#lgName").focus(); return; }
+  const f=lodgeForm;
+  Object.assign(f,{name, checkin:$("#lgIn").value, checkout:$("#lgOut").value, address:$("#lgAddr").value.trim(),
+    phone:$("#lgPhone").value.trim(), homepage:$("#lgHome").value.trim(), instagram:$("#lgIg").value.trim(),
+    booking:$("#lgBook").value.trim(), memo:$("#lgMemo").value.trim()});
+  if(f.id){ const i=S.lodging.findIndex(x=>x.id===f.id); S.lodging[i]=f; }
+  else { f.id="lg"+Date.now(); f.by=meId; S.lodging.push(f); addFeed(`숙소 '${name}'을(를) 등록했어요 🏨`); }
+  syncLodging(f); closeModal(); renderHome(); toast("숙소 정보를 저장했어요 🏨");
+}
+function delLodging(id){
+  S.lodging=S.lodging.filter(x=>x.id!==id);
+  syncDeleteLodging(id); closeModal(); renderHome(); toast("숙소를 삭제했어요");
+}
+function syncLodging(l){ save(); if(FB.on) roomRef().collection("lodging").doc(l.id).set(JSON.parse(JSON.stringify(l))).catch(fbErr); }
+function syncDeleteLodging(id){ save(); if(FB.on) roomRef().collection("lodging").doc(id).delete().catch(fbErr); }
 function openHelp(){
   $("#modalRoot").innerHTML=`
   <div class="modal-bg" onclick="if(event.target===this)closeModal()">
@@ -1814,6 +1917,7 @@ async function fbConnect(code, create){
       S.items.forEach(it=>batch.set(ref.collection("items").doc(it.id), JSON.parse(JSON.stringify(it))));
       S.pack.forEach(p=>batch.set(ref.collection("pack").doc(p.id), JSON.parse(JSON.stringify(p))));
       S.expenses.forEach(x=>batch.set(ref.collection("expenses").doc(x.id), JSON.parse(JSON.stringify(x))));
+      S.lodging.forEach(l=>batch.set(ref.collection("lodging").doc(l.id), JSON.parse(JSON.stringify(l))));
       batch.set(ref.collection("meta").doc("diary"), JSON.parse(JSON.stringify(S.diary||{})));
       await batch.commit();
     }else{
@@ -1862,6 +1966,9 @@ function attachFb(ref){
   }, fbErr));
   FB.unsub.push(ref.collection("expenses").onSnapshot(q=>{
     S.expenses=q.docs.map(d=>d.data()); save(); safeRenderAll();
+  }, fbErr));
+  FB.unsub.push(ref.collection("lodging").onSnapshot(q=>{
+    S.lodging=q.docs.map(d=>d.data()); save(); safeRenderAll();
   }, fbErr));
   FB.unsub.push(ref.collection("meta").doc("diary").onSnapshot(d=>{
     if(d.exists){ S.diary=d.data()||{}; save(); safeRenderAll(); }
@@ -2601,8 +2708,10 @@ function stopAnim(resetBtn=true){
    준비물 체크리스트 (5단계) — 공용 + 개인별
    ================================================================ */
 let listView = "pack"; // pack | shop
+let packOwner=null, packOwnerInit=false;
 function setListView(v){ listView=v; renderPack(); }
 function renderPack(){
+  if(!packOwnerInit){ packOwner=meId||null; packOwnerInit=true; }
   const kind=listView, isShop=kind==="shop";
   const all=S.pack.filter(p=>(p.kind||"pack")===kind);
   const total=all.length, done=all.filter(p=>p.done).length;
@@ -2635,9 +2744,9 @@ function renderPack(){
       <div class="sec-title">➕ ${noun} 추가</div>
       <div class="addrow">
         <input class="f-input" id="pkText" placeholder="${isShop?'예: 후추, 캐슈넛, 기념품':'예: 선글라스'}" maxlength="30" onkeydown="if(event.key==='Enter')addPack()">
-        <select class="f-input" id="pkOwner">
-          <option value="">공용</option>
-          ${S.trip.members.map(m=>`<option value="${m.id}" ${m.id===meId?"selected":""}>${m.emoji} ${esc(m.nickname)}</option>`).join("")}
+        <select class="f-input" id="pkOwner" onchange="packOwner=this.value||null">
+          <option value="" ${!packOwner?"selected":""}>공용</option>
+          ${S.trip.members.map(m=>`<option value="${m.id}" ${m.id===packOwner?"selected":""}>${m.emoji} ${esc(m.nickname)}</option>`).join("")}
         </select>
         <button class="btn-mini" onclick="addPack()">추가</button>
       </div>
@@ -2669,8 +2778,7 @@ function renderReco(){
 }
 function addReco(i){
   const pool=curRecoPool(); const txt=pool[i]; if(!txt) return;
-  const ownerSel=$("#pkOwner"); const owner=ownerSel?(ownerSel.value||null):(meId||null);
-  const p={id:"p"+Date.now()+Math.floor(Math.random()*1e3), text:txt, owner, done:false, createdBy:meId, kind:listView};
+  const p={id:"p"+Date.now()+Math.floor(Math.random()*1e3), text:txt, owner:packOwner, done:false, createdBy:meId, kind:listView};
   S.pack.push(p);
   addFeed(`${listView==="shop"?"쇼핑리스트":"준비물"}에 '${txt}'을(를) 추가했어요 ${listView==="shop"?"🛍️":"🎒"}`);
   syncPack(p); renderPack(); toast("추천을 담았어요!");
@@ -2682,7 +2790,7 @@ function togglePack(id){
 function addPack(){
   const t=$("#pkText").value.trim();
   if(!t){ $("#pkText").focus(); return; }
-  const p={id:"p"+Date.now()+Math.floor(Math.random()*1e3), text:t, owner:$("#pkOwner").value||null, done:false, createdBy:meId, kind:listView};
+  const p={id:"p"+Date.now()+Math.floor(Math.random()*1e3), text:t, owner:packOwner, done:false, createdBy:meId, kind:listView};
   S.pack.push(p);
   addFeed(`${listView==="shop"?"쇼핑리스트":"준비물"}에 '${t}'을(를) 추가했어요 ${listView==="shop"?"🛍️":"🎒"}`);
   syncPack(p); renderPack(); toast("추가했어요!");
