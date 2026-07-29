@@ -271,6 +271,14 @@ textarea.f-input{resize:vertical; min-height:64px}
 .reco-txt{font-weight:800; font-size:.92rem; color:var(--teal-dark)}
 .more-btn{margin-left:auto; font-size:.76rem; font-weight:800; color:var(--teal-dark); background:var(--teal-light); border-radius:999px; padding:5px 11px; flex-shrink:0}
 .reco-chips{display:flex; flex-wrap:wrap; gap:7px}
+.wish-row{display:flex; align-items:center; gap:9px; padding:9px 2px; border-bottom:1px dashed var(--line)}
+.wish-row:last-of-type{border-bottom:none}
+.wish-row .we{font-size:1.2rem; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+.wish-row .wn{font-weight:800; font-size:.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wish-row .wa{font-size:.72rem; color:var(--ink-soft)}
+.wish-row .wbtn{flex-shrink:0; border-radius:10px; padding:7px 9px; font-size:.8rem; font-weight:800; background:var(--cream); color:var(--ink-soft); text-decoration:none}
+.wish-row .wbtn.add{background:#FFF0E9; color:var(--coral-dark)}
+.wish-row .wbtn:active{transform:scale(.95)}
 .lg-card{background:var(--cream); border-radius:12px; padding:12px; margin-bottom:8px}
 .lg-top{display:flex; align-items:center; gap:8px}
 .lg-name{font-weight:800; font-size:1rem}
@@ -608,7 +616,11 @@ function demoData(){
      homepage:"wyndhamgrandphuquoc.com", instagram:"@wyndhamgrandphuquoc", booking:"",
      memo:"조식 6:30~10:00 · 수영장 24시간 · 셔틀 매시 정각", by:"m1"},
   ];
-  return { trip, items, pack, expenses, lodging, diary:{}, feed:[
+  const wish = [
+    {id:"w1", name:"Crab House", category:"식사", memo:"", place:{name:"Crab House", lat:10.2214, lng:103.9628}, by:"m3"},
+    {id:"w2", name:"Chuon Chuon Bistro", category:"카페", memo:"", place:{name:"Chuon Chuon Bistro", lat:10.1897, lng:103.9738}, by:"m2"},
+  ];
+  return { trip, items, pack, expenses, lodging, wish, diary:{}, feed:[
     {who:"m3", txt:"'선셋타운 키스교 불쇼' 일정을 추가했어요", ts:Date.now()-3600e3},
     {who:"m2", txt:"'가족 스파 타임' 일정을 추가했어요", ts:Date.now()-7200e3},
     {who:"m1", txt:"'푸꾸옥 진주농장'을 후보로 올렸어요", ts:Date.now()-10800e3},
@@ -639,6 +651,7 @@ function load(){
         if(!d.diary) d.diary = {};
         if(!d.expenses) d.expenses = [];
         if(!d.lodging) d.lodging = [];
+        if(!d.wish) d.wish = [];
         return migrate(d);
       }
     }
@@ -882,6 +895,25 @@ function renderHome(){
       <div class="sec-title">🏝️ 푸꾸옥 여행 정보</div>
       <div class="imp-hint" style="margin-top:0">명소·해변·유적지·맛집 추천 모음 — 마음에 들면 그 자리에서 바로 일정에 추가할 수 있어요!</div>
       <button class="btn-primary" style="margin-top:10px;background:var(--teal);box-shadow:0 4px 14px rgba(23,162,162,.3)" onclick="openGuide()">🏝️ 추천 여행 정보 보기</button>
+    </div>
+    <div class="card">
+      <div class="sec-title">💖 가고 싶은 곳 <small>${S.wish.length}곳</small></div>
+      ${S.wish.length? S.wish.map(w=>{
+        const c=CATS[w.category]||CATS["기타"];
+        const mapUrl = (w.place&&w.place.lat!=null)
+          ? `https://www.google.com/maps/search/${encodeURIComponent(w.name)}/@${w.place.lat},${w.place.lng},16z`
+          : `https://www.google.com/maps/search/${encodeURIComponent(w.name+" Phu Quoc")}`;
+        const mem = member(w.by);
+        return `<div class="wish-row">
+          <span class="we" style="background:${c.bg}">${c.e}</span>
+          <div style="min-width:0;flex:1"><div class="wn">${esc(w.name)}</div>
+          <div class="wa">${w.place&&w.place.lat!=null?"📍 좌표 저장됨":"이름만 저장"}${mem?" · "+mem.emoji:""}</div></div>
+          <a class="wbtn" href="${mapUrl}" target="_blank" rel="noopener">🗺️</a>
+          <button class="wbtn add" onclick="wishToPlan('${w.id}')">＋일정</button>
+          <button class="wbtn" onclick="delWish('${w.id}')">✕</button>
+        </div>`;
+      }).join("") : `<div class="empty">가고 싶은 음식점·카페·명소를 미리 담아두세요.<br>나중에 ＋일정으로 쏙 넣을 수 있어요!</div>`}
+      <button class="btn-primary" style="margin-top:10px;background:#E85D9A;box-shadow:0 4px 14px rgba(232,93,154,.3)" onclick="openWishAdd()">➕ 가고 싶은 곳 담기</button>
     </div>
     <div class="card">
       <div class="sec-title">🍜 내 주변 맛집</div>
@@ -1911,6 +1943,7 @@ async function fbConnect(code, create){
       S.pack.forEach(p=>batch.set(ref.collection("pack").doc(p.id), JSON.parse(JSON.stringify(p))));
       S.expenses.forEach(x=>batch.set(ref.collection("expenses").doc(x.id), JSON.parse(JSON.stringify(x))));
       S.lodging.forEach(l=>batch.set(ref.collection("lodging").doc(l.id), JSON.parse(JSON.stringify(l))));
+      S.wish.forEach(w=>batch.set(ref.collection("wish").doc(w.id), JSON.parse(JSON.stringify(w))));
       batch.set(ref.collection("meta").doc("diary"), JSON.parse(JSON.stringify(S.diary||{})));
       await batch.commit();
     }else{
@@ -1962,6 +1995,9 @@ function attachFb(ref){
   }, fbErr));
   FB.unsub.push(ref.collection("lodging").onSnapshot(q=>{
     S.lodging=q.docs.map(d=>d.data()); save(); safeRenderAll();
+  }, fbErr));
+  FB.unsub.push(ref.collection("wish").onSnapshot(q=>{
+    S.wish=q.docs.map(d=>d.data()); save(); safeRenderAll();
   }, fbErr));
   FB.unsub.push(ref.collection("meta").doc("diary").onSnapshot(d=>{
     if(d.exists){ S.diary=d.data()||{}; save(); safeRenderAll(); }
@@ -2182,6 +2218,60 @@ function parseGmapsShare(txt){
 }
 
 /* 자유 텍스트 → 일정 초안 */
+let wishCands=[];
+function openWishAdd(){
+  $("#modalRoot").innerHTML=`
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>💖 가고 싶은 곳 담기<button class="x" onclick="closeModal()">✕</button></h2>
+      <label class="f-label">장소 이름 또는 구글지도 링크</label>
+      <div class="searchrow">
+        <input class="f-input" id="wishQ" placeholder="예: Crab House / https://maps.app.goo.gl/..." onkeydown="if(event.key==='Enter')wishSearch()">
+        <button class="btn-mini" onclick="wishSearch()">🔍 찾기</button>
+      </div>
+      <div id="wishRes"></div>
+      <div class="imp-hint">구글지도 앱에서 <b>장소 → 공유</b>한 링크를 붙여넣거나, 이름으로 검색해 담을 수 있어요. 좌표를 못 찾아도 이름만으로 담을 수 있어요. (아직 일정에는 안 들어가요)</div>
+    </div>
+  </div>`;
+  setTimeout(()=>$("#wishQ").focus(),250);
+}
+async function wishSearch(){
+  const q=$("#wishQ").value.trim(); const box=$("#wishRes");
+  if(!q){ $("#wishQ").focus(); return; }
+  box.innerHTML=`<div class="imp-msg"><span class="spin">🥥</span> 찾는 중…</div>`;
+  const p=parseGmapsShare(q);
+  let cands=[];
+  if(p.name && p.lat!=null){ cands=[{name:p.name, addr:"구글지도 링크에서 추출", lat:p.lat, lng:p.lng}]; }
+  else{
+    const term=p.name||p.freeText||q;
+    try{ cands=await geocode(term+(/(phu quoc|푸꾸옥)/i.test(term)?"":" Phu Quoc")); if(!cands.length) cands=await geocode(term); }catch(e){ cands=[]; }
+    if(p.lat!=null) cands.unshift({name:term, addr:"링크 위치", lat:p.lat, lng:p.lng});
+  }
+  wishCands=cands;
+  box.innerHTML = cands.map((c,i)=>`
+    <button class="res-item" onclick="saveWish(${i})"><span class="pin">📍</span>
+      <div style="min-width:0"><div class="nm2">${esc(c.name)}</div><div class="ad">${esc(c.addr||"")}</div></div>
+      <span class="go">담기 ›</span></button>`).join("")
+    + `<button class="res-item" onclick="saveWishManual()"><span class="pin">✏️</span>
+      <div style="min-width:0"><div class="nm2">'${esc(q)}' 이름만으로 담기</div><div class="ad">좌표 없이 저장 (나중에 지도에서 찾기)</div></div>
+      <span class="go">담기 ›</span></button>`;
+}
+function saveWish(i){ const c=wishCands[i]; if(!c) return; _saveWish(c.name, c.lat, c.lng); }
+function saveWishManual(){ const q=$("#wishQ").value.trim(); if(!q) return; _saveWish(q, null, null); }
+function _saveWish(name, lat, lng){
+  const w={id:"w"+Date.now()+Math.floor(Math.random()*1e3), name, category:guessCat(name), memo:"",
+    place:{name, ...(lat!=null?{lat,lng}:{})}, by:meId};
+  S.wish.push(w); addFeed(`가고 싶은 곳 '${name}'을(를) 담았어요 💖`);
+  syncWish(w); closeModal(); renderHome(); toast("가고 싶은 곳에 담았어요 💖");
+}
+function delWish(id){ const w=S.wish.find(x=>x.id===id); S.wish=S.wish.filter(x=>x.id!==id); syncDeleteWish(id); renderHome(); toast(w?`'${w.name}' 삭제됨`:"삭제됨"); }
+function wishToPlan(id){
+  const w=S.wish.find(x=>x.id===id); if(!w) return;
+  openForm(null, {title:w.name, category:w.category||"관광", place:JSON.parse(JSON.stringify(w.place||{name:w.name}))});
+  toast("날짜·시간을 정해 일정에 추가하세요 📅");
+}
+function syncWish(w){ save(); if(FB.on) roomRef().collection("wish").doc(w.id).set(JSON.parse(JSON.stringify(w))).catch(fbErr); }
+function syncDeleteWish(id){ save(); if(FB.on) roomRef().collection("wish").doc(id).delete().catch(fbErr); }
 function guessCat(t){
   if(/조식|점심|저녁|식당|맛집|국수|분짜|반쎄오|먹|밥|디너|런치/.test(t)) return "식사";
   if(/카페|커피|디저트|빙수/.test(t)) return "카페";
