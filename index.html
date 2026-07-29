@@ -439,8 +439,8 @@ button.stat{font-family:inherit}
 <nav class="tabbar" id="tabbar">
   <button class="tab active" data-v="home"><span class="ico">🏠</span><span class="lb">홈</span></button>
   <button class="tab" data-v="plan"><span class="ico">📅</span><span class="lb">일정</span></button>
-  <button class="tab" data-v="expense"><span class="ico">💰</span><span class="lb">경비</span></button>
   <button class="tab" data-v="pack"><span class="ico">🧾</span><span class="lb">리스트</span></button>
+  <button class="tab" data-v="expense"><span class="ico">💰</span><span class="lb">경비</span></button>
   <button class="tab" data-v="family"><span class="ico">👥</span><span class="lb">멤버</span></button>
 </nav>
 
@@ -900,7 +900,8 @@ function renderHome(){
       <div class="sec-title">💖 가고 싶은 곳 <small>${S.wish.length}곳</small></div>
       ${S.wish.length? S.wish.map(w=>{
         const c=CATS[w.category]||CATS["기타"];
-        const mapUrl = (w.place&&w.place.lat!=null)
+        const mapUrl = w.url ? w.url
+          : (w.place&&w.place.lat!=null)
           ? `https://www.google.com/maps/search/${encodeURIComponent(w.name)}/@${w.place.lat},${w.place.lng},16z`
           : `https://www.google.com/maps/search/${encodeURIComponent(w.name+" Phu Quoc")}`;
         const mem = member(w.by);
@@ -2230,37 +2231,89 @@ function openWishAdd(){
         <button class="btn-mini" onclick="wishSearch()">🔍 찾기</button>
       </div>
       <div id="wishRes"></div>
-      <div class="imp-hint">구글지도 앱에서 <b>장소 → 공유</b>한 링크를 붙여넣거나, 이름으로 검색해 담을 수 있어요. 좌표를 못 찾아도 이름만으로 담을 수 있어요. (아직 일정에는 안 들어가요)</div>
+      <div class="imp-hint">구글지도에서 <b>공유 → 링크 복사</b>한 걸 붙여넣으면 자동으로 분석해요(짧은 링크도 OK). 한글 이름으로 검색해도 되고, 안 나오면 <b>이름만으로도</b> 담을 수 있어요 — 🗺️를 누르면 구글지도에서 바로 열려요. (아직 일정엔 안 들어가요)</div>
     </div>
   </div>`;
   setTimeout(()=>$("#wishQ").focus(),250);
+}
+/* 짧은 구글지도 링크(maps.app.goo.gl) 자동 분석 — CORS 프록시로 실제 주소 펼쳐 좌표·이름 추출 */
+async function resolveGmaps(url){
+  const proxies=[u=>"https://api.allorigins.win/get?url="+encodeURIComponent(u),
+                 u=>"https://corsproxy.io/?url="+encodeURIComponent(u)];
+  for(const px of proxies){
+    try{
+      const r=await fetch(px(url)); if(!r.ok) continue;
+      let html="", finalUrl="";
+      const ct=r.headers.get("content-type")||"";
+      if(ct.includes("json")){ const j=await r.json(); html=j.contents||""; finalUrl=(j.status&&j.status.url)||""; }
+      else { html=await r.text(); }
+      let name=null, lat=null, lng=null;
+      const og=html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+      if(og) name=og[1];
+      if(!name){ const t=html.match(/<title>([^<]+)<\/title>/i); if(t) name=t[1].replace(/ - Google.*/i,"").replace(/\s*·.*$/,"").trim(); }
+      const c = html.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/)
+             || html.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/)
+             || html.match(/\[null,null,(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)\]/)
+             || (finalUrl && finalUrl.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/));
+      if(c){ lat=+c[1]; lng=+c[2]; }
+      if(finalUrl){ const nm=finalUrl.match(/\/place\/([^\/@?]+)/); if(nm && (!name||/google/i.test(name))) { try{ name=decodeURIComponent(nm[1]).replace(/\+/g," "); }catch(e){} } }
+      if(name || lat!=null) return {name:name&&!/google|maps/i.test(name)?name:null, lat, lng};
+    }catch(e){}
+  }
+  return {};
 }
 async function wishSearch(){
   const q=$("#wishQ").value.trim(); const box=$("#wishRes");
   if(!q){ $("#wishQ").focus(); return; }
   box.innerHTML=`<div class="imp-msg"><span class="spin">🥥</span> 찾는 중…</div>`;
   const p=parseGmapsShare(q);
-  let cands=[];
-  if(p.name && p.lat!=null){ cands=[{name:p.name, addr:"구글지도 링크에서 추출", lat:p.lat, lng:p.lng}]; }
-  else{
-    const term=p.name||p.freeText||q;
-    try{ cands=await geocode(term+(/(phu quoc|푸꾸옥)/i.test(term)?"":" Phu Quoc")); if(!cands.length) cands=await geocode(term); }catch(e){ cands=[]; }
-    if(p.lat!=null) cands.unshift({name:term, addr:"링크 위치", lat:p.lat, lng:p.lng});
+  /* ---- 링크가 있으면: 좌표/이름 추출(짧은 링크는 펼쳐서) 후 이름 지어 담기 ---- */
+  if(p.url){
+    let name=p.name, lat=p.lat, lng=p.lng;
+    if((!name || lat==null)){
+      const rr=await resolveGmaps(p.url);
+      if(!name) name=rr.name;
+      if(lat==null && rr.lat!=null){ lat=rr.lat; lng=rr.lng; }
+    }
+    showWishLinkSave(p.url, name||"", lat, lng);
+    return;
   }
+  /* ---- 텍스트면: 무료 검색으로 좌표 찾기(보너스) + 언제나 이름으로 담기 ---- */
+  let cands=[];
+  try{ cands=await geocode(q+(/(phu quoc|푸꾸옥)/i.test(q)?"":" Phu Quoc")); if(!cands.length) cands=await geocode(q); }catch(e){ cands=[]; }
   wishCands=cands;
-  box.innerHTML = cands.map((c,i)=>`
+  box.innerHTML = (cands.length?`<div class="f-label" style="margin-top:0">📍 지도에서 찾음 — 눌러서 담기</div>`:"")
+    + cands.map((c,i)=>`
     <button class="res-item" onclick="saveWish(${i})"><span class="pin">📍</span>
       <div style="min-width:0"><div class="nm2">${esc(c.name)}</div><div class="ad">${esc(c.addr||"")}</div></div>
       <span class="go">담기 ›</span></button>`).join("")
-    + `<button class="res-item" onclick="saveWishManual()"><span class="pin">✏️</span>
-      <div style="min-width:0"><div class="nm2">'${esc(q)}' 이름만으로 담기</div><div class="ad">좌표 없이 저장 (나중에 지도에서 찾기)</div></div>
+    + `<button class="res-item" onclick="saveWishManual()" style="background:#FBEAF3;border-radius:12px;margin-top:6px"><span class="pin">💖</span>
+      <div style="min-width:0"><div class="nm2">'${esc(q)}' 이름으로 담기</div><div class="ad">좌표 없이 저장 · 🗺️로 구글지도에서 바로 찾을 수 있어요</div></div>
       <span class="go">담기 ›</span></button>`;
+}
+function showWishLinkSave(url, name, lat, lng){
+  window._wishLink={url, lat, lng};
+  const found = lat!=null;
+  $("#wishRes").innerHTML=`
+    <div class="imp-hint" style="margin-top:0">${found?"✅ 링크에서 위치를 찾았어요!":"🔗 링크는 저장돼요(🗺️로 열림). 좌표는 못 읽었지만 이름만 정하면 담을 수 있어요."}</div>
+    <label class="f-label">이 장소 이름</label>
+    <div class="searchrow">
+      <input class="f-input" id="wishLinkName" placeholder="예: 크랩 하우스" value="${esc(name)}">
+      <button class="btn-mini" onclick="saveWishLink()">💖 담기</button>
+    </div>`;
+  setTimeout(()=>{ const el=$("#wishLinkName"); if(el){ el.focus(); if(!name) return; el.select(); } },150);
+}
+function saveWishLink(){
+  const name=($("#wishLinkName").value||"").trim();
+  if(!name){ $("#wishLinkName").style.borderColor="var(--danger)"; $("#wishLinkName").focus(); return; }
+  const L=window._wishLink||{};
+  _saveWish(name, L.lat, L.lng, L.url);
 }
 function saveWish(i){ const c=wishCands[i]; if(!c) return; _saveWish(c.name, c.lat, c.lng); }
 function saveWishManual(){ const q=$("#wishQ").value.trim(); if(!q) return; _saveWish(q, null, null); }
-function _saveWish(name, lat, lng){
+function _saveWish(name, lat, lng, url){
   const w={id:"w"+Date.now()+Math.floor(Math.random()*1e3), name, category:guessCat(name), memo:"",
-    place:{name, ...(lat!=null?{lat,lng}:{})}, by:meId};
+    place:{name, ...(lat!=null?{lat,lng}:{})}, url:url||"", by:meId};
   S.wish.push(w); addFeed(`가고 싶은 곳 '${name}'을(를) 담았어요 💖`);
   syncWish(w); closeModal(); renderHome(); toast("가고 싶은 곳에 담았어요 💖");
 }
